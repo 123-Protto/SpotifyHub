@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to the Rural Sports Store!</title>
+    {# You can add some basic styling for .buy-now-button in your store_list.html's style or static CSS file #}
+    <style>
+        .buy-now-button {
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .buy-now-button:hover {
+            background-color: #218838;
+        }
+        /* Add any other styles for product-item, etc. here */
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Rural Sports Store!</h1>
+    <p>This is the main store page. Check our products:</p>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="product-grid"> {# Assuming you wrap your products in a grid or flex container #}
+        {% for product in products %}
+            <div class="product-item">
+                {# --- Place your existing product display code here --- #}
+                {# e.g., product image, name, description, price, etc. #}
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width:150px; height:150px; object-fit: cover;">
+                {% else %}
+                    <img src="/static/placeholder.png" alt="No Image" style="width:150px; height:150px; object-fit: cover;">
+                {% endif %}
+                <h4>{{ product.name }}</h4>
+                <p>₹{{ product.price }}</p>
+                <p>Stock: {{ product.stock }}</p>
+
+                <form action="{% url 'add_to_cart' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="number" name="quantity" value="1" min="1" style="width: 50px;">
+                    <button type="submit">Add to Cart</button>
+                </form>
+
+                {# --- ADD THE BUY NOW FORM/BUTTON HERE --- #}
+              <form action="{% url 'buy_now' %}" method="post">
+             {% csrf_token %}
+             <input type="hidden" name="product_id" value="{{ product.id }}">
+             <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 50px;">
+             <button type="submit">Buy Now</button>
+             </form>
+
+            </div>
+        {% endfor %}
+    </div>
+
+    <p><a href="{% url 'cart' %}">View Cart</a></p>
+</body>
+</html>

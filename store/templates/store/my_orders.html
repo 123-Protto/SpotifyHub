@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>My Orders</h1>
+    {% if orders %}
+        {% for order in orders %}
+            <div class="order-item">
+                <h3>Order #{{ order.id }}</h3>
+                <p>Total: ₹{{ order.total_amount }}</p>
+                <p>Status: {{ order.payment_status }}</p>
+                <p>Date: {{ order.created_at }}</p>
+            </div>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>You have not placed any orders yet.</p>
+    {% endif %}
+{% endblock %}

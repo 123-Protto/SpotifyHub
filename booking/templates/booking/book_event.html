@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Ticket – {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="booking-wrapper">
+    <div class="booking-card">
+
+        <!-- TITLE -->
+        <h1 class="booking-title">🎟️ Book Your Ticket</h1>
+
+        <!-- EVENT INFO -->
+        <div class="event-header">
+            <h2 class="event-name">{{ event.name }}</h2>
+
+            <div class="event-meta">
+                <span>📅 {{ event.date }}</span>
+                <span>📍 {{ event.location }}</span>
+            </div>
+
+            <div class="price-badge">
+                ₹<span id="price-per-ticket">{{ event.price }}</span>
+                <small>/ ticket</small>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- FORM -->
+        <form action="{% url 'booking:book_event' event.id %}" method="post">
+            {% csrf_token %}
+
+            <label for="id_num_tickets" class="form-label">
+                Number of Tickets
+            </label>
+
+            <input type="number"
+                   name="num_tickets"
+                   id="id_num_tickets"
+                   class="form-control ticket-input"
+                   value="1"
+                   min="1"
+                   required>
+
+            <div class="total-price">
+                Total Price:
+                <span>₹<span id="total-price">{{ event.price }}</span></span>
+            </div>
+
+            <button type="submit" class="btn confirm-btn">
+                Confirm Booking
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<!-- PRICE UPDATE SCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const qty = document.getElementById('id_num_tickets');
+    const price = parseFloat(document.getElementById('price-per-ticket').innerText);
+    const total = document.getElementById('total-price');
+
+    function updateTotal() {
+        total.innerText = (price * qty.value).toFixed(2);
+    }
+
+    qty.addEventListener('input', updateTotal);
+});
+</script>
+
+{% endblock %}

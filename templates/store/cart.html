@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Shopping Cart{% endblock %}
+
+{% block content %}
+<div class="container my-5 cart-page">
+
+    <h1 class="mb-4">Your Shopping Cart</h1>
+
+    {% if cart_items %}
+        {% for item in cart_items %}
+        <div class="cart-item-card">
+
+            <!-- PRODUCT IMAGE -->
+            <div class="cart-image">
+                {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                {% else %}
+                    <img src="{% static 'images/placeholder.jpg' %}" alt="No Image">
+                {% endif %}
+            </div>
+
+            <!-- PRODUCT INFO -->
+            <div class="cart-details">
+                <h4>{{ item.product.name }}</h4>
+                <p>Price: ₹{{ item.product.price }}</p>
+                <p>
+                    Quantity: {{ item.quantity }}
+                </p>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="cart-actions">
+                <a href="{% url 'store:checkout' %}?buy_now={{ item.product.id }}"
+                   class="btn btn-success btn-sm mb-2 w-100">
+                    Buy Now
+                </a>
+
+                <a href="{% url 'store:remove_from_cart' item.id %}"
+                   class="btn btn-danger btn-sm w-100">
+                    Remove
+                </a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+        <!-- CART SUMMARY -->
+        <div class="cart-summary mt-4">
+
+            <a href="{% url 'store:checkout' %}"
+               class="btn btn-primary btn-lg mt-2">
+                Proceed to Checkout
+            </a>
+        </div>
+
+    {% else %}
+        <p>Your cart is empty.</p>
+        <a href="{% url 'store:shop' %}" class="btn btn-primary">
+            Continue Shopping
+        </a>
+    {% endif %}
+
+</div>
+{% endblock %}

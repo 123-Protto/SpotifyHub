@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load allauth account %}
+
+{% block title %}{% trans "Create Account" %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+
+    <div class="auth-card auth-signup">
+
+        <h1 class="auth-title">{% trans "Create Account" %}</h1>
+
+        <p class="auth-subtitle">
+            {% blocktrans %}
+            Already have an account?
+            <a href="{{ login_url }}">Sign in</a>
+            {% endblocktrans %}
+        </p>
+
+        {% url 'account_signup' as action_url %}
+        {% element form method="post" action=action_url tags="entrance,signup" %}
+            {% slot body %}
+                {% csrf_token %}
+                {% element fields form=form %}
+                {% endelement %}
+
+                {% if redirect_field_value %}
+                    <input type="hidden"
+                           name="{{ redirect_field_name }}"
+                           value="{{ redirect_field_value }}">
+                {% endif %}
+            {% endslot %}
+
+            {% slot actions %}
+                {% element button type="submit" tags="primary,signup" %}
+                    {% trans "Create Account" %}
+                {% endelement %}
+            {% endslot %}
+        {% endelement %}
+
+        {% if SOCIALACCOUNT_ENABLED %}
+
+            {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock content %}

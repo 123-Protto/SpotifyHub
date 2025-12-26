@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Rural Sports Hub{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+   <div class="home-hero-content animate-hero">
+    <h1 class="hero-title">Welcome to SpotifyHub!</h1>
+    <p class="hero-subtitle">
+        Your one-stop destination for rural sports event tickets and quality sports gear.
+    </p>
+
+    <div class="hero-buttons">
+        <a href="{% url 'events:events_list' %}" class="btn btn-primary">
+            Browse Events
+        </a>
+        <a href="{% url 'store:shop' %}" class="btn btn-success ms-2">
+            Shop Sports Gear
+        </a>
+    </div>
+</div>
+
+
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block title %}{% trans "Sign Out" %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+
+    <div class="auth-card auth-logout">
+
+        <h1 class="auth-title">{% trans "Sign Out" %}</h1>
+
+        <p class="auth-subtitle">
+            {% trans "You are about to end your current session." %}
+            <br>
+            {% trans "Are you sure you want to continue?" %}
+        </p>
+
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+
+            {% if redirect_field_value %}
+                <input type="hidden"
+                       name="{{ redirect_field_name }}"
+                       value="{{ redirect_field_value }}">
+            {% endif %}
+
+            <button type="submit" class="btn btn-danger btn-lg w-100">
+                {% trans "Sign Out" %}
+            </button>
+        </form>
+
+        <div class="logout-cancel">
+            <a href="/" class="text-muted">
+                {% trans "Cancel and return to homepage" %}
+            </a>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

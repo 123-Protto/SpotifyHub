@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout Summary{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 800px;">
+
+    <h1 class="mb-4 text-center">Checkout Summary</h1>
+
+    <!-- ===================== ADDRESS ===================== -->
+    <div class="mb-4">
+        <h4>Shipping Address</h4>
+
+        {% if address %}
+            <div class="card p-3 bg-dark text-light">
+                <p class="fw-bold mb-1">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </p>
+                <p class="mb-1">{{ address.address_line_1 }}</p>
+                <p class="mb-1">
+                    {{ address.city }}, {{ address.state }} - {{ address.postal_code }}
+                </p>
+                <p class="mb-0">{{ address.country }}</p>
+
+                <a href="{% url 'store:add_address' %}"
+                   class="btn btn-sm btn-outline-light mt-3">
+                    Update Address
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                No shipping address found.
+                <a href="{% url 'store:add_address' %}">Add address</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ===================== ORDER ITEMS ===================== -->
+    <div class="mb-4">
+        <h4>Order Items</h4>
+
+        <div class="card bg-black text-light p-3">
+            {% for item in order_items %}
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>{{ item.name }} (x{{ item.qty }})</span>
+                    <span>₹{{ item.total|floatformat:2 }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                <span>Total:</span>
+                <span>₹{{ total_amount|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== PAY BUTTON ===================== -->
+    <button id="pay-btn" class="btn btn-success btn-lg w-100 py-3">
+        Pay ₹{{ total_amount|floatformat:2 }} with Cashfree
+    </button>
+
+    <!-- CSRF TOKEN -->
+    <form id="csrf-form" style="display:none;">
+        {% csrf_token %}
+    </form>
+
+</div>
+
+<!-- ===================== CASHFREE SDK ===================== -->
+<script>
+document.getElementById("pay-btn").addEventListener("click", function () {
+
+    fetch("/store/cashfree/create-order/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.payment_session_id) {
+            alert("Unable to start payment");
+            return;
+        }
+
+        const cashfree = Cashfree({
+            mode: "sandbox" // change to "production" later
+        });
+
+        cashfree.checkout({
+            paymentSessionId: data.payment_session_id,
+            redirectTarget: "_self"
+        });
+    });
+});
+</script>
+
+
+{% endblock %}

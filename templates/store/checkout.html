@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout Summary{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 800px;">
+
+    <h1 class="mb-4 text-center">Checkout Summary</h1>
+
+    {# ===================== MESSAGES ===================== #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {# ===================== SHIPPING ADDRESS ===================== #}
+    <div class="mb-4">
+        <h4>Shipping Address</h4>
+
+        {% if address %}
+            <div class="card p-3 bg-dark text-light border-secondary">
+                <p class="fw-bold mb-1">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </p>
+
+                <p class="mb-1">{{ address.address_line_1 }}</p>
+
+                {% if address.address_line_2 %}
+                    <p class="mb-1">{{ address.address_line_2 }}</p>
+                {% endif %}
+
+                <p class="mb-1">
+                    {{ address.city }}, {{ address.state }} - {{ address.postal_code }}
+                </p>
+
+                <p class="mb-1">{{ address.country }}</p>
+                <p class="mb-0">Phone: {{ address.phone_number }}</p>
+
+                <a href="{% url 'store:add_address' %}"
+                   class="btn btn-sm btn-outline-light mt-3">
+                    Update Address
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                No shipping address found.
+                <a href="{% url 'store:add_address' %}">Add one</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ===================== ORDER SUMMARY ===================== #}
+    <div class="mb-4">
+        <h4>Order Details</h4>
+
+        <div class="card bg-black text-light border-secondary p-3">
+            {% for item in order_items %}
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>{{ item.name }} (x{{ item.qty }})</span>
+                    <span>₹{{ item.total|floatformat:2 }}</span>
+                </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                <span>Total:</span>
+                <span>₹{{ total_amount|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# ===================== PAY WITH CASHFREE ===================== #}
+    <button id="pay-btn" class="btn btn-success btn-lg w-100">
+        Pay ₹{{ total_amount|floatformat:2 }} with Cashfree
+    </button>
+
+</div>
+
+{# ===================== CASHFREE SCRIPT ===================== #}
+<script src="https://sdk.cashfree.com/js/ui/2.0.0/dropin.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const payBtn = document.getElementById("pay-btn");
+
+    payBtn.addEventListener("click", function () {
+
+        console.log("🟢 Pay button clicked");
+
+        fetch("{% url 'store:create_cashfree_order' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Accept": "application/json"
+            }
+        })
+        .then(response => {
+            console.log("🟡 Response status:", response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log("🟢 Cashfree data:", data);
+
+            if (!data.payment_session_id) {
+                alert("Payment failed to start.");
+                return;
+            }
+
+            if (typeof Cashfree === "undefined") {
+                alert("Cashfree SDK not loaded");
+                return;
+            }
+
+            const cashfree = new Cashfree({
+                mode: "sandbox" // production when live
+            });
+
+            cashfree.checkout({
+                paymentSessionId: data.payment_session_id,
+                redirectTarget: "_self"
+            });
+        })
+        .catch(error => {
+            console.error("❌ JS error:", error);
+            alert("Payment error");
+        });
+    });
+});
+</script>
+
+
+{% endblock %}

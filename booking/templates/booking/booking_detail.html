@@ -1,0 +1,192 @@
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block title %}Booking Details - {{ booking.id }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Custom CSS for this page */
+        body {
+            background-image: url('{% static "img/background_sports.jpg" %}'); /* Use your dark sports background image */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f8f9fa; /* Light text for dark background */
+        }
+        .container-fluid.booking-details-wrapper {
+            background-color: rgba(0, 0, 0, 0.85); /* Darker overlay for content readability */
+            padding: 40px 20px;
+            min-height: 100vh; /* Ensure it covers full height */
+            display: flex;
+            align-items: flex-start; /* Align content to the top */
+            justify-content: center;
+        }
+        .booking-card {
+            background-color: #212529; /* Darker card background */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.25); /* More prominent green glow */
+            color: #e2e6ea; /* Light grey text */
+            width: 100%;
+            max-width: 900px; /* Max width for readability */
+            margin-top: 30px; /* Space from top */
+            margin-bottom: 30px; /* Space from bottom */
+        }
+        .booking-card .card-header {
+            background-color: #0d6efd; /* Primary blue header */
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: none;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 1.8rem 1.5rem;
+            text-align: center;
+            letter-spacing: 1.5px;
+        }
+        .booking-card .card-body {
+            padding: 2.5rem;
+        }
+        .booking-card h2 {
+            color: #20c997; /* Teal for section headings */
+            font-size: 1.6rem;
+            margin-top: 2rem;
+            margin-bottom: 1.2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        .booking-card h2 i {
+            margin-right: 12px;
+            color: #fd7e14; /* Orange icon color */
+        }
+        .booking-card p {
+            margin-bottom: 1rem;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.4;
+        }
+        .booking-card p i {
+            margin-right: 12px;
+            color: #0dcaf0; /* Cyan icon color */
+            margin-top: 3px; /* Adjust icon vertical alignment */
+            min-width: 20px; /* Ensure icon has space */
+            text-align: center;
+        }
+        .booking-card p strong {
+            color: #f8f9fa; /* White for labels */
+            font-weight: 600;
+        }
+        .booking-card ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 1rem;
+        }
+        .booking-card ul li {
+            background-color: rgba(255, 255, 255, 0.08);
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .booking-card ul li i {
+            margin-right: 15px;
+            color: #6610f2; /* Purple icon color */
+        }
+        .status-success {
+            color: #198754; /* Bootstrap success green */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-pending {
+            color: #ffc107; /* Bootstrap warning yellow */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-outline-primary, .btn-outline-secondary {
+            font-size: 1.1rem;
+            padding: 10px 25px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary {
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+            box-shadow: 0 4px 10px rgba(108, 117, 125, 0.4);
+            transform: translateY(-2px);
+        }
+        .text-warning {
+            color: #ffc107 !important; /* Ensure warning text is visible */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid booking-details-wrapper">
+    <div class="row justify-content-center">
+        <div class="col-12"> {# Use full width for the card wrapper, max-width set on card itself #}
+            <div class="card booking-card">
+                <div class="card-header">
+                    Booking ID: {{ booking.id }}
+                </div>
+                <div class="card-body">
+                    <p><i class="fas fa-user-circle"></i> <strong>User:</strong> {{ booking.user.username }}</p>
+                    {% if booking.shipping_address %}
+                        <p><i class="fas fa-envelope"></i> <strong>Email:</strong> {{ booking.user.email }}</p>
+                        <p><i class="fas fa-phone-alt"></i> <strong>Phone Number:</strong> {{ booking.shipping_address.phone_number }}</p>
+                        {% comment %} You can add other address details here if desired {% endcomment %}
+                        <p><i class="fas fa-map-marker-alt"></i> <strong>Address:</strong> {{ booking.shipping_address.address_line_1 }}, {{ booking.shipping_address.city }}, {{ booking.shipping_address.state }}, {{ booking.shipping_address.zip_code }}</p>
+                    {% endif %}
+
+                    <h2><i class="fas fa-calendar-alt"></i> Event Details</h2>
+                    <p><i class="fas fa-flag"></i> <strong>Event:</strong> {{ booking.event.name }}</p>
+                    <p><i class="fas fa-hashtag"></i> <strong>Number of Tickets:</strong> {{ booking.num_tickets }}</p>
+                    <p><i class="fas fa-coins"></i> <strong>Total Price:</strong> ₹{{ booking.total_price }}</p>
+                    <p>
+                        <i class="fas fa-credit-card"></i> <strong>Payment Status:</strong> 
+                        <span class="{% if booking.payment_status == 'successful' %}status-success{% elif booking.payment_status == 'pending' %}status-pending{% endif %}">
+                            {{ booking.payment_status|capfirst }}
+                        </span>
+                    </p>
+
+                    {% if booking.seats.exists %}
+                        <h2><i class="fas fa-chair"></i> Selected Seats</h2>
+                        <ul>
+                            {% for seat in booking.seats.all %}
+                                <li><i class="fas fa-check-circle"></i> {{ seat.section }} - Row {{ seat.row_number }}, Seat {{ seat.seat_number }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-warning mt-4">No seats selected for this booking yet.</p>
+                    {% endif %}
+
+                   <div class="mt-5 pt-3 text-center border-top border-secondary">
+   <a href="{% url 'booking:process_payment' booking.id %}" class="btn btn-success"><i class="fas fa-money-bill-wave"></i> Book Now</a>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Confirmation</title>
+</head>
+<body>
+    <h1>Booking Confirmed!</h1>
+    <p>Hi {{ booking.user.username }},</p>
+    <p>Thank you for your booking. The details of your confirmed booking are as follows:</p>
+    <ul>
+        <li><strong>Booking ID:</strong> {{ booking.id }}</li>
+        <li><strong>Event:</strong> {{ booking.event.name }}</li>
+        <li><strong>Number of Tickets:</strong> {{ booking.num_tickets }}</li>
+        <li><strong>Total Price:</strong> ₹{{ booking.total_price }}</li>
+    </ul>
+    <p>We look forward to seeing you at the event!</p>
+    <p>Best regards,<br>The Rural Sports Team</p>
+</body>
+</html>

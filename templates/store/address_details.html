@@ -1,0 +1,44 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div class="container my-5">
+    <h2>Select a Shipping Address</h2>
+    
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+<form method="post" action="{% url 'checkout' %}">
+        {% csrf_token %}
+        {% for address in addresses %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <input type="radio" name="address_id" value="{{ address.id }}" id="address-{{ address.id }}" required>
+                    <label for="address-{{ address.id }}">
+                        <p class="card-text">
+                            {{ address.full_name }}<br>
+                            {{ address.address_line_1 }}<br>
+                            {% if address.address_line_2 %}{{ address.address_line_2 }}<br>{% endif %}
+                            {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                            {{ address.country }}<br>
+                            Phone: {{ address.phone_number }}
+                        </p>
+                    </label>
+                </div>
+            </div>
+        {% empty %}
+         ...
+{% if not addresses %}
+    <div class="alert alert-warning">
+        You have no saved addresses. Please add one first.
+        <a href="{% url 'add_address' %}" class="btn btn-warning mt-2">Add New Address</a>
+    </div>
+{% endif %}
+...
+        {% endfor %}
+
+        <button type="submit" class="btn btn-success mt-3" {% if not addresses %}disabled{% endif %}>
+            Proceed to Payment
+        </button>
+    </form>
+</div>
+{% endblock %}

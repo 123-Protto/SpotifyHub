@@ -1,0 +1,299 @@
+{% extends 'base.html' %} {# Assuming you have a base.html that includes Bootstrap #}
+{% load static %} {# To load static files like custom CSS or images #}
+
+{% block title %}Select Seats for {{ event.name }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Custom CSS for the Seat Selection Page */
+        body {
+            background-image: url('{% static "img/background_sports.jpg" %}'); /* Adjust path to your dark sports background image */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f8f9fa; /* Light text for dark background */
+        }
+        .container.seat-selection-wrapper {
+            background-color: rgba(0, 0, 0, 0.8); /* Dark overlay for content readability */
+            padding: 40px;
+            border-radius: 10px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); /* Subtle green glow */
+        }
+        h1, h2 {
+            color: #0dcaf0; /* Cyan for main headings */
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+        }
+        .lead {
+            color: #e2e6ea; /* Light grey for lead text */
+        }
+        .messages .alert {
+            margin-bottom: 1rem;
+        }
+
+        /* Legend Styling */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            color: #f8f9fa;
+            font-size: 1.1rem;
+        }
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ccc;
+            margin-right: 8px;
+            border-radius: 4px;
+        }
+        .legend-color.available { background-color: #198754; border-color: #0d6efd; } /* Green, Blue border */
+        .legend-color.selected { background-color: #0d6efd; border-color: #ffc107; } /* Blue, Yellow border */
+        .legend-color.sold { background-color: #dc3545; border-color: #f8f9fa; } /* Red, White border */
+
+        /* Seat Section Styling */
+        .seat-section {
+            margin-top: 2.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05); /* Very slight transparency */
+        }
+        .seat-section h2 {
+            font-size: 1.8rem;
+            color: #20c997; /* Teal for section headings */
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        /* Seat Row Styling */
+        .seat-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+        .seat-row:last-child {
+            border-bottom: none;
+        }
+        .row-label {
+            font-weight: bold;
+            margin-right: 20px;
+            min-width: 60px; /* Give more space to row labels */
+            text-align: right;
+            color: #fd7e14; /* Orange for row labels */
+            font-size: 1.1rem;
+        }
+        .seat-grid {
+            display: flex; /* Use flex for horizontal layout of seats */
+            flex-wrap: wrap; /* Allow seats to wrap to next line if too many */
+            gap: 10px; /* Space between seats */
+            flex-grow: 1; /* Allow grid to take available space */
+        }
+
+        /* Individual Seat Button Styling */
+        .seat-button {
+            width: 60px; /* Fixed width for seat buttons */
+            height: 60px; /* Fixed height for seat buttons */
+            border: 2px solid #5a6268; /* Default border color */
+            background-color: #495057; /* Default background color */
+            cursor: pointer;
+            text-align: center;
+            border-radius: 8px; /* More rounded corners */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.2s ease-in-out; /* Smooth transitions */
+        }
+
+        /* Hide the default checkbox input visually */
+        .seat-button input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 1; /* Make it clickable over the div */
+        }
+        /* Seat content for text */
+        .seat-content {
+            color: #f8f9fa; /* Light text for seat number */
+            position: relative;
+            z-index: 0;
+        }
+
+        /* Seat state specific styles */
+        .seat-button.available {
+            background-color: #198754; /* Bootstrap success green */
+            border-color: #157347;
+        }
+        .seat-button.sold {
+            background-color: #dc3545; /* Bootstrap danger red */
+            border-color: #bb2d3b;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .seat-button.sold .seat-content {
+            text-decoration: line-through; /* Strikethrough for sold seats */
+            opacity: 0.8;
+        }
+        .seat-button.selected {
+            background-color: #0d6efd; /* Bootstrap primary blue */
+            border-color: #0a58ca;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.7); /* Blue glow when selected */
+        }
+
+        /* Hover effect for available seats */
+        .seat-button.available:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.4);
+        }
+
+        /* Style for when the checkbox is checked */
+        /* This applies the 'selected' style when the hidden checkbox is truly checked */
+        .seat-button input[type="checkbox"]:checked {
+            /* This is a visual trick: the JS will add 'selected' class directly to label. */
+            /* This rule is here as a fallback/redundancy if JS fails or for pure CSS selection */
+            /* If JS is robust, this might not be strictly needed, but it's good for robustness */
+            outline: 2px solid #ffc107; /* A subtle yellow outline on check */
+            outline-offset: -2px;
+        }
+
+        /* Confirm button styling */
+        .btn-success {
+            background-color: #28a745; /* Green */
+            border-color: #28a745;
+            font-size: 1.3rem;
+            padding: 12px 30px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container seat-selection-wrapper">
+    <h1 class="text-center">{{ event.name }}</h1>
+    <p class="lead text-center text-warning">You have booked {{ booking.num_tickets }} tickets. Please select your seats below.</p>
+
+    {% if messages %}
+        <div class="messages mt-4">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} text-center">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-center mb-4 mt-5">
+        <div class="legend-item"><span class="legend-color available"></span> Available</div>
+        <div class="legend-item"><span class="legend-color selected"></span> Selected</div>
+        <div class="legend-item"><span class="legend-color sold"></span> Sold</div>
+    </div>
+
+    <form method="post" action="{% url 'booking:select_seats' booking.id %}">
+        {% csrf_token %}
+
+        {% for section_name, rows_in_section in seats_by_section_and_row %}
+            <div class="seat-section">
+                <h2>{{ section_name }}</h2>
+                {% for row_number, seats_in_row in rows_in_section %}
+                    <div class="seat-row">
+                        <span class="row-label">Row {{ row_number }}:</span>
+                        <div class="seat-grid">
+                            {% for seat in seats_in_row %}
+                                {% comment %}
+                                    Key change: input type is now "checkbox"
+                                    The "selected" class is added based on if the seat is already associated with the booking.
+                                {% endcomment %}
+                                <label class="seat-button {% if seat.is_booked %}sold{% elif seat in booking.seats.all %}selected{% else %}available{% endif %}">
+                                    <input type="checkbox" 
+                                           name="selected_seats" 
+                                           value="{{ seat.id }}" 
+                                           {% if seat.is_booked %}disabled{% endif %}
+                                           {% if seat in booking.seats.all %}checked{% endif %}>
+                                    <span class="seat-content">{{ seat.seat_number }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="text-center mt-5">
+            <button type="submit" class="btn btn-success">Confirm Seats</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected_seats"]');
+        const numTicketsBooked = {{ booking.num_tickets }};
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const selectedCount = document.querySelectorAll('input[name="selected_seats"]:checked').length;
+                const label = this.closest('label');
+
+                // If a seat is being checked
+                if (this.checked) {
+                    if (selectedCount > numTicketsBooked) {
+                        alert(`You can only select ${numTicketsBooked} seat(s) for this booking.`);
+                        this.checked = false; // Uncheck it immediately
+                        // No change to label classes as it wasn't successfully checked
+                    } else {
+                        label.classList.add('selected');
+                        label.classList.remove('available'); // Remove available if it was there
+                    }
+                } 
+                // If a seat is being unchecked
+                else {
+                    label.classList.remove('selected');
+                    // Only re-add 'available' class if it's not a sold seat
+                    if (!label.classList.contains('sold')) {
+                        label.classList.add('available');
+                    }
+                }
+            });
+        });
+
+        // Initial styling on load based on seat state
+        checkboxes.forEach(checkbox => {
+            const label = checkbox.closest('label');
+            if (checkbox.disabled) {
+                label.classList.add('sold');
+            } else if (checkbox.checked) { // This means it was pre-selected (e.g., from previous visit)
+                label.classList.add('selected');
+            } else {
+                label.classList.add('available');
+            }
+            // Ensure no conflicting classes are present
+            if (label.classList.contains('sold')) {
+                label.classList.remove('available', 'selected');
+            } else if (label.classList.contains('selected')) {
+                label.classList.remove('available', 'sold');
+            } else { // Must be available
+                label.classList.remove('selected', 'sold');
+            }
+        });
+    });
+</script>
+{% endblock %}
