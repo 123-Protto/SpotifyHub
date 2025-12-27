@@ -55,7 +55,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "crispy_forms",
     "crispy_bootstrap5",
+    "cloudinary",
+    "cloudinary_storage",
 ]
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 SITE_ID = 1
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -116,22 +120,27 @@ DATABASES = {
 # ============================================================
 # STATIC FILES (RENDER SAFE)
 # ============================================================
+# STATIC FILES
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only for LOCAL development
 if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ============================================================
-# MEDIA FILES
-# ============================================================
+
+# CLOUDINARY
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+
 
 # ============================================================
 # AUTH / ALLAUTH
