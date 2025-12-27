@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ============================================================
-# LOAD ENV (LOCAL ONLY – Render uses dashboard env vars)
+# LOAD ENV (LOCAL ONLY)
 # ============================================================
 load_dotenv(BASE_DIR / ".env")
 
@@ -17,7 +17,7 @@ load_dotenv(BASE_DIR / ".env")
 # ============================================================
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    "django-insecure-local-dev-only"
+    "django-insecure-fallback-only-for-local-dev"
 )
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
@@ -28,7 +28,7 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
-# Render proxy fix (IMPORTANT)
+# Render / proxy fix
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ============================================================
@@ -45,15 +45,14 @@ INSTALLED_APPS = [
     # Project apps
     "core",
     "events",
-    "store",
     "booking",
+    "store",
 
     # Third-party
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
     "crispy_forms",
     "crispy_bootstrap5",
 ]
@@ -62,12 +61,12 @@ SITE_ID = 1
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # ============================================================
-# MIDDLEWARE (CORRECT ORDER)
+# MIDDLEWARE (ORDER IS CRITICAL)
 # ============================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise MUST be right after SecurityMiddleware
+    # WhiteNoise must be here
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -76,7 +75,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -106,7 +104,7 @@ TEMPLATES = [
 ]
 
 # ============================================================
-# DATABASE (SQLite – OK for Render Free)
+# DATABASE (SQLite – OK for Render free)
 # ============================================================
 DATABASES = {
     "default": {
@@ -116,12 +114,12 @@ DATABASES = {
 }
 
 # ============================================================
-# STATIC FILES (RENDER SAFE CONFIG)
+# STATIC FILES (RENDER SAFE)
 # ============================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Only use STATICFILES_DIRS in LOCAL development
+# Only for LOCAL development
 if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
 
@@ -164,7 +162,7 @@ ACCOUNT_RATE_LIMITS = {
 }
 
 # ============================================================
-# CSRF / SECURITY
+# CSRF / SECURITY (RENDER SAFE)
 # ============================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
@@ -193,9 +191,6 @@ CASHFREE_BASE_URL = os.getenv(
     "CASHFREE_BASE_URL",
     "https://sandbox.cashfree.com/pg"
 )
-
-if not CASHFREE_CLIENT_ID or not CASHFREE_CLIENT_SECRET:
-    print("⚠️ Cashfree keys missing")
 
 # ============================================================
 # EMAIL (DEV)

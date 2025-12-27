@@ -906,3 +906,162 @@ button, a {
     background: rgba(13,110,253,0.18);
     color: #0d6efd;
 }
+/* =========================================================
+   📱 MOBILE FIX — FINAL (SAFE + PRO)
+   Append at END of CSS
+========================================================= */
+
+@media (max-width: 768px) {
+
+    /* ❌ FIX MOBILE BACKGROUND JANK */
+    body {
+        padding-top: 88px;
+        background-attachment: scroll; /* 🔥 critical fix */
+    }
+
+    body::before {
+        background-attachment: scroll;
+        filter: brightness(0.5);
+    }
+
+    /* ================================
+       NAVBAR MOBILE REFINEMENT
+    ================================ */
+    .glass-navbar {
+        top: 6px;
+        width: calc(100% - 12px);
+        padding: 10px 14px;
+        border-radius: 14px;
+    }
+
+    .glass-navbar .navbar-brand {
+        font-size: 1.05rem;
+    }
+
+    .glass-navbar .navbar-collapse {
+        margin-top: 10px;
+        padding: 10px;
+    }
+
+    .glass-navbar .nav-link {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    /* ================================
+       HERO SECTION MOBILE
+    ================================ */
+    .home-hero {
+        min-height: auto;
+        padding-top: 40px;
+        padding-bottom: 60px;
+    }
+
+    .home-hero-content {
+        padding: 0 14px;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+        line-height: 1.25;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+        margin-top: 10px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ================================
+       STATS BAR FIX
+    ================================ */
+    .home-hero .d-flex {
+        gap: 16px;
+    }
+
+    .home-hero h3 {
+        font-size: 1.4rem;
+    }
+
+    /* ================================
+       EVENT CARDS MOBILE
+    ================================ */
+    .event-card {
+        border-radius: 14px;
+    }
+
+    .event-thumb {
+        height: 160px;
+    }
+
+    .event-body {
+        padding: 14px;
+    }
+
+    /* ================================
+       PRODUCT GRID MOBILE
+    ================================ */
+    .product-list {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .product-image-wrapper {
+        height: 180px;
+    }
+
+    /* ================================
+       CART PAGE MOBILE
+    ================================ */
+    .cart-item-card {
+        padding: 14px;
+        gap: 14px;
+    }
+
+    .cart-image {
+        width: 100%;
+        height: 160px;
+    }
+
+    /* ================================
+       BOOKING / AUTH CARDS
+    ================================ */
+    .booking-card,
+    .auth-card {
+        padding: 22px 20px;
+        border-radius: 18px;
+    }
+
+    .booking-title,
+    .auth-title {
+        font-size: 1.6rem;
+    }
+
+    /* ================================
+       BUTTON TAP COMFORT
+    ================================ */
+    button,
+    a,
+    .btn {
+        min-height: 48px;
+        font-size: 0.95rem;
+    }
+
+    /* ================================
+       FOOTER SPACING
+    ================================ */
+    footer {
+        padding: 16px 0;
+        font-size: 0.85rem;
+    }
+}
