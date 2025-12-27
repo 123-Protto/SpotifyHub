@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ============================================================
-# LOAD ENV
+# LOAD ENV (LOCAL ONLY – Render uses dashboard env vars)
 # ============================================================
 load_dotenv(BASE_DIR / ".env")
 
@@ -17,7 +17,7 @@ load_dotenv(BASE_DIR / ".env")
 # ============================================================
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    "django-insecure-fallback-only-for-local-dev"
+    "django-insecure-local-dev-only"
 )
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
@@ -27,6 +27,9 @@ ALLOWED_HOSTS = [
     "localhost",
     ".onrender.com",
 ]
+
+# Render proxy fix (IMPORTANT)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ============================================================
 # INSTALLED APPS
@@ -40,10 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # Project apps
-    "store",
-    "booking",
     "core",
     "events",
+    "store",
+    "booking",
 
     # Third-party
     "django.contrib.sites",
@@ -59,12 +62,12 @@ SITE_ID = 1
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # ============================================================
-# MIDDLEWARE  ✅ (CORRECT ORDER)
+# MIDDLEWARE (CORRECT ORDER)
 # ============================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # ✅ WhiteNoise MUST be right after SecurityMiddleware
+    # WhiteNoise MUST be right after SecurityMiddleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -73,6 +76,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -102,7 +106,7 @@ TEMPLATES = [
 ]
 
 # ============================================================
-# DATABASE (SQLite for now, OK for Render Free)
+# DATABASE (SQLite – OK for Render Free)
 # ============================================================
 DATABASES = {
     "default": {
@@ -112,11 +116,14 @@ DATABASES = {
 }
 
 # ============================================================
-# STATIC FILES (CRITICAL FOR UI)
+# STATIC FILES (RENDER SAFE CONFIG)
 # ============================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Only use STATICFILES_DIRS in LOCAL development
+if DEBUG:
+    STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STATICFILES_STORAGE = (
     "whitenoise.storage.CompressedManifestStaticFilesStorage"
