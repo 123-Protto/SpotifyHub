@@ -26,8 +26,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    ".onrender.com",
-    "*",  # Safe for Render
+    "spotifyhub.onrender.com",
 ]
 
 # Render / proxy SSL fix
@@ -170,7 +169,6 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_SIGNUP_FIELDS = [
     "email*",
-    "email2*",
     "username*",
     "password1*",
     "password2*",
