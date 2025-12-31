@@ -271,16 +271,24 @@ def cashfree_webhook(request):
 # =====================================================
 @login_required
 def booking_detail_view(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    tickets = Ticket.objects.filter(booking_ref=str(booking.id))
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        user=request.user
+    )
+
+    tickets = Ticket.objects.filter(
+        booking_ref=str(booking.id),
+        user=request.user
+    )
 
     return render(
         request,
         "booking/booking_detail.html",
         {
             "booking": booking,
-            "tickets": tickets
-        },
+            "tickets": tickets,
+        }
     )
 
 

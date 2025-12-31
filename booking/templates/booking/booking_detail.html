@@ -66,7 +66,7 @@
 
             <p>
                 <strong>Payment Status:</strong>
-                <span class="{% if booking.payment_status == 'successful' %}status-success{% else %}status-pending{% endif %}">
+                <span class="{% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}status-success{% else %}status-pending{% endif %}">
                     {{ booking.payment_status|capfirst }}
                 </span>
             </p>
@@ -82,7 +82,7 @@
 
             <div class="mt-5 text-center border-top pt-4">
 
-                {% if booking.payment_status == 'successful' %}
+                {% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}
 
                     {% if tickets %}
                         <h5 class="text-success mb-3">Your Tickets</h5>
@@ -96,12 +96,23 @@
                         <p class="text-warning">Tickets are being generated. Please refresh.</p>
                     {% endif %}
 
-                {% elif booking.payment_status == 'pending' %}
+                {% else %}
 
                     <a href="{% url 'booking:process_payment' booking.id %}"
                        class="btn btn-warning">
                         Pay Now
                     </a>
+
+                    <p class="text-muted mt-3">
+                        Payment completed? This page will update automatically.
+                    </p>
+
+                    <!-- 🔁 AUTO REFRESH (Cashfree webhook delay fix) -->
+                    <script>
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 5000);
+                    </script>
 
                 {% endif %}
 
