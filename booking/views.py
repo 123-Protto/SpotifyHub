@@ -209,47 +209,58 @@ def process_payment_view(request, booking_id):
 def cashfree_webhook(request):
     try:
         payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
+    except Exception as e:
+        logger.error("Invalid webhook JSON")
         return JsonResponse({"status": "invalid json"}, status=400)
 
     event_type = payload.get("type")
+    logger.info(f"Cashfree webhook received: {event_type}")
 
-    # ✅ Allow test webhook
+    # ✅ Allow dashboard test webhook
     if event_type == "TEST_WEBHOOK":
         return JsonResponse({"status": "ok"})
 
-    if event_type != "PAYMENT_SUCCESS_WEBHOOK":
+    # ✅ Correct success event
+    if event_type != "PAYMENT_SUCCESS":
         return JsonResponse({"status": "ignored"})
 
-    data = payload["data"]
-    order_id = data["order"]["order_id"]
-    payment = data["payment"]
+    data = payload.get("data", {})
+    order = data.get("order", {})
+    payment = data.get("payment", {})
 
     if payment.get("payment_status") != "SUCCESS":
-        return JsonResponse({"status": "failed"})
+        return JsonResponse({"status": "payment not successful"})
+
+    order_id = order.get("order_id")
+    if not order_id:
+        return JsonResponse({"status": "missing order id"}, status=400)
 
     booking = get_object_or_404(Booking, cashfree_order_id=order_id)
 
+    # 🔁 Idempotency guard
     if booking.is_paid:
         return JsonResponse({"status": "already processed"})
 
+    # ✅ Mark booking paid
     booking.is_paid = True
     booking.payment_status = Booking.PAYMENT_SUCCESSFUL
-    booking.cashfree_payment_id = str(payment["cf_payment_id"])
+    booking.cashfree_payment_id = str(payment.get("cf_payment_id"))
     booking.save(update_fields=[
-    "is_paid",
-    "payment_status",
-    "cashfree_payment_id",
-])
+        "is_paid",
+        "payment_status",
+        "cashfree_payment_id",
+    ])
 
-
+    # 🎟️ Generate tickets safely (avoid duplicates)
     for seat in booking.seats.all():
-        Ticket.objects.create(
+        Ticket.objects.get_or_create(
             user=booking.user,
             event=booking.event,
             seat=seat,
             booking_ref=str(booking.id),
         )
+
+    logger.info(f"Payment confirmed for booking {booking.id}")
 
     return JsonResponse({"status": "success"})
 

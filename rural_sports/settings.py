@@ -20,7 +20,8 @@ SECRET_KEY = os.getenv(
     "django-insecure-fallback-only-for-local-dev"
 )
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -30,6 +31,7 @@ ALLOWED_HOSTS = [
 ]
 
 # Render / proxy SSL fix
+SECURE_SSL_REDIRECT = not DEBUG
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ============================================================
@@ -184,7 +186,7 @@ ACCOUNT_RATE_LIMITS = {
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "https://*.onrender.com",
+    "https://spotifyhub.onrender.com",
 ]
 
 CSRF_COOKIE_SECURE = not DEBUG
@@ -208,8 +210,9 @@ CASHFREE_BASE_URL = os.getenv(
     "CASHFREE_BASE_URL",
     "https://sandbox.cashfree.com/pg"
 )
-CASHFREE_WEBHOOK_URL ="https://24d3779e7486.ngrok-free.app/store/cashfree/webhook/"
-CASHFREE_BOOKING_WEBHOOK_URL ="https://24d3779e7486.ngrok-free.app/booking/cashfree/webhook/"
+CASHFREE_WEBHOOK_URL = os.getenv("CASHFREE_WEBHOOK_URL")
+CASHFREE_BOOKING_WEBHOOK_URL = os.getenv("CASHFREE_BOOKING_WEBHOOK_URL")
+
 
 
 # ============================================================
