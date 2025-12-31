@@ -1,6 +1,5 @@
 from decimal import Decimal
 import json
-import uuid
 import requests
 
 from django.conf import settings
@@ -11,8 +10,12 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.utils import timezone
 
-from .models import Cart, CartItem, Product, Address, Order, OrderItem
+from .models import (
+    Cart, CartItem, Product, Address,
+    Order, OrderItem, OrderShipping
+)
 from .forms import AddressForm
 
 
@@ -41,14 +44,13 @@ def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
-    cart_item, created = CartItem.objects.get_or_create(
+    item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product
     )
-
     if not created:
-        cart_item.quantity += 1
-    cart_item.save()
+        item.quantity += 1
+        item.save()
 
     messages.success(request, "Item added to cart")
     return redirect("store:cart")
@@ -71,32 +73,39 @@ def remove_from_cart(request, item_id):
 # =====================================================
 @login_required
 def checkout(request):
-    cart = get_object_or_404(Cart, user=request.user)
-    cart_items = CartItem.objects.filter(cart=cart)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    buy_now_product_id = request.GET.get("buy_now")
 
-    if not cart_items.exists():
-        messages.warning(request, "Your cart is empty.")
-        return redirect("store:shop")
+    # Store buy-now in session
+    if buy_now_product_id:
+        request.session["buy_now"] = buy_now_product_id
+    else:
+        request.session.pop("buy_now", None)
 
-    order_items = []
-    total_amount = Decimal("0.00")
+    if buy_now_product_id:
+        product = get_object_or_404(Product, id=buy_now_product_id)
+        cart_items = [{
+            "product": product,
+            "quantity": 1,
+            "sub_total": product.price
+        }]
+        total_amount = product.price
+    else:
+        cart_items_qs = cart.items.all()
+        if not cart_items_qs.exists():
+            messages.warning(request, "Your cart is empty.")
+            return redirect("store:shop")
 
-    for item in cart_items:
-        line_total = item.sub_total()
-        total_amount += line_total
-
-        order_items.append({
-            "name": item.product.name,
-            "qty": item.quantity,
-            "total": line_total
-        })
+        cart_items = cart_items_qs
+        total_amount = sum(item.sub_total() for item in cart_items_qs)
 
     address = Address.objects.filter(user=request.user).first()
 
     return render(request, "store/checkout.html", {
-        "order_items": order_items,
+        "cart_items": cart_items,
         "total_amount": total_amount,
         "address": address,
+        "buy_now": buy_now_product_id,
     })
 
 
@@ -116,120 +125,152 @@ def add_address(request):
 
 
 # =====================================================
-# 🔥 CASHFREE CREATE ORDER (FIXED)
+# CASHFREE CREATE ORDER
 # =====================================================
 @require_POST
 @login_required
 def create_cashfree_order(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+
     try:
-        user = request.user
-        cart = get_object_or_404(Cart, user=user)
-        cart_items = cart.items.select_related("product")
+        data = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        data = {}
 
+    buy_now_product_id = data.get("buy_now") or request.session.get("buy_now")
+
+    # Calculate total
+    if buy_now_product_id:
+        product = get_object_or_404(Product, id=buy_now_product_id)
+        order_total = product.price
+        order_items = [(product, 1)]
+    else:
+        cart_items = cart.items.all()
         if not cart_items.exists():
-            return JsonResponse({"error": "Cart empty"}, status=400)
+            return JsonResponse({"error": "No items to pay for"}, status=400)
 
-        total_amount = sum(item.sub_total() for item in cart_items)
+        order_total = sum(item.sub_total() for item in cart_items)
+        order_items = [(item.product, item.quantity) for item in cart_items]
 
-        if total_amount <= 0:
-            return JsonResponse({"error": "Invalid amount"}, status=400)
-
-        order_id = f"store_{uuid.uuid4().hex[:12]}"
-
-        payload = {
-            "order_id": order_id,
-            "order_amount": float(total_amount),
-            "order_currency": "INR",
-            "customer_details": {
-                "customer_id": str(user.id),
-                "customer_email": user.email or "test@example.com",
-
-                # ✅ MUST be realistic
-                "customer_phone": (
-                    user.address.phone
-                    if hasattr(user, "address") and user.address.phone
-                    else "9876543210"
-                ),
-            },
-        }
-
-        headers = {
-            "x-client-id": settings.CASHFREE_CLIENT_ID,
-            "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
-            "x-api-version": "2022-09-01",
-            "Content-Type": "application/json",
-        }
-
-        response = requests.post(
-            f"{settings.CASHFREE_BASE_URL}/orders",
-            json=payload,
-            headers=headers,
-            timeout=15,
-        )
-
-        data = response.json()
-
-        # 🔥 IMPORTANT DEBUG (keep while testing)
-        print("🟡 Cashfree status:", response.status_code)
-        print("🟡 Cashfree response:", data)
-
-        if response.status_code not in (200, 201):
-            return JsonResponse(
-                {"error": "Cashfree API error", "details": data},
-                status=400
-            )
-
-        if "payment_session_id" not in data:
-            return JsonResponse(
-                {"error": "Missing payment_session_id", "details": data},
-                status=400
-            )
-
-        return JsonResponse({
-            "order_id": order_id,
-            "payment_session_id": data["payment_session_id"]
-        })
-
-    except Exception as e:
-        print("❌ Cashfree Exception:", str(e))
-        return JsonResponse({"error": "Server error"}, status=500)
-
-
-
-# =====================================================
-# CASHFREE WEBHOOK
-# =====================================================
-@csrf_exempt
-@transaction.atomic
-def cashfree_webhook(request):
-    payload = json.loads(request.body)
-
-    if payload.get("order_status") != "PAID":
-        return JsonResponse({"status": "ignored"})
-
-    user_id = payload["customer_details"]["customer_id"]
-    order_id = payload["order_id"]
-
-    cart = Cart.objects.get(user_id=user_id)
-    cart_items = CartItem.objects.filter(cart=cart)
+    # Create order
+    address = Address.objects.filter(user=request.user).first()
 
     order = Order.objects.create(
-        user_id=user_id,
-        total_amount=Decimal(payload["order_amount"]),
-        payment_status="COMPLETED",
-        payment_id=payload.get("cf_payment_id"),
-        payment_gateway_order_id=order_id,
+        user=request.user,
+        address=address,
+        total_amount=order_total,
+        payment_status="PENDING",
+        order_status="PENDING",
     )
 
-    for item in cart_items:
+    for product, qty in order_items:
         OrderItem.objects.create(
             order=order,
-            product=item.product,
-            quantity=item.quantity,
-            price_at_purchase=item.product.price,
+            product=product,
+            quantity=qty,
+            price_at_purchase=product.price,
         )
 
-    cart_items.delete()
+    cashfree_order_id = f"store_{order.id}"
+
+    payload = {
+        "order_id": cashfree_order_id,
+        "order_amount": float(order.total_amount),
+        "order_currency": "INR",
+        "order_meta": {
+            "notify_url": f"{settings.CASHFREE_WEBHOOK_URL}"
+        },
+        "customer_details": {
+            "customer_id": str(request.user.id),
+            "customer_email": request.user.email,
+            "customer_phone": "9876543210",
+        },
+    }
+
+    headers = {
+        "x-client-id": settings.CASHFREE_CLIENT_ID,
+        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+        "x-api-version": "2022-09-01",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(
+        f"{settings.CASHFREE_BASE_URL}/orders",
+        json=payload,
+        headers=headers,
+        timeout=15,
+    )
+
+    if response.status_code != 200:
+        order.delete()
+        return JsonResponse({"error": "Cashfree failed"}, status=400)
+
+    order.payment_gateway_order_id = cashfree_order_id
+    order.save(update_fields=["payment_gateway_order_id"])
+
+    return JsonResponse({
+        "payment_session_id": response.json()["payment_session_id"],
+        "order_id": order.id,
+    })
+
+
+# =====================================================
+# CASHFREE WEBHOOK (SAFE + IDEMPOTENT)
+# =====================================================
+@csrf_exempt
+@require_POST
+def cashfree_webhook(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    if payload.get("type") != "PAYMENT_SUCCESS_WEBHOOK":
+        return JsonResponse({"status": "ignored"})
+
+    data = payload.get("data", {})
+    order_id = data.get("order", {}).get("order_id")
+    payment = data.get("payment", {})
+
+    if payment.get("payment_status") != "SUCCESS":
+        return JsonResponse({"status": "payment not successful"})
+
+    try:
+        order = Order.objects.get(payment_gateway_order_id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"error": "Order not found"}, status=404)
+
+    # Prevent duplicate execution
+    if order.payment_status == "COMPLETED":
+        return JsonResponse({"status": "already processed"})
+
+    with transaction.atomic():
+        order.payment_status = "COMPLETED"
+        order.order_status = "PROCESSING"
+        order.payment_id = str(payment.get("cf_payment_id"))
+        order.save(update_fields=[
+            "payment_status",
+            "order_status",
+            "payment_id"
+        ])
+
+        # Create shipping snapshot once
+        if order.address and not hasattr(order, "shipping"):
+            addr = order.address
+            OrderShipping.objects.create(
+                order=order,
+                full_name=addr.full_name,
+                phone=addr.phone_number,
+                address_line_1=addr.address_line_1,
+                address_line_2=addr.address_line_2 or "",
+                city=addr.city,
+                state=addr.state,
+                pincode=addr.postal_code,
+            )
+
+        CartItem.objects.filter(cart__user=order.user).delete()
+
+    request.session.pop("buy_now", None)
     return JsonResponse({"status": "success"})
 
 
@@ -237,26 +278,25 @@ def cashfree_webhook(request):
 # ORDERS
 # =====================================================
 @login_required
+def my_orders(request):
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
+    return render(request, "store/my_orders.html", {"orders": orders})
+
+
+@login_required
 def order_confirmation(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, "store/order_confirmation.html", {"order": order})
 
 
 @login_required
-def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "store/my_orders.html", {"orders": orders})
-
-
-@login_required
 def buy_now(request, product_id):
-    cart, _ = Cart.objects.get_or_create(user=request.user)
-    product = get_object_or_404(Product, id=product_id)
-
-    CartItem.objects.filter(cart=cart).delete()
-    CartItem.objects.create(cart=cart, product=product, quantity=1)
-
-    return redirect("store:checkout")
+    return redirect(f"/store/checkout/?buy_now={product_id}")
 
 
 @login_required
@@ -265,16 +305,41 @@ def ajax_add_to_cart(request, product_id):
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
     item, created = CartItem.objects.get_or_create(
-        cart=cart, product=product
+        cart=cart,
+        product=product
     )
-
     if not created:
         item.quantity += 1
         item.save()
 
-    cart_count = cart.items.count()
-
     return JsonResponse({
         "status": "success",
-        "cart_count": cart_count
+        "cart_count": cart.items.count()
     })
+
+
+@login_required
+@require_POST
+def confirm_delivery(request, order_id):
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user,
+        order_status="SHIPPED"
+    )
+
+    order.order_status = "DELIVERED"
+    order.save(update_fields=["order_status"])
+
+    messages.success(request, "🎉 Delivery confirmed. Thank you!")
+    return redirect("store:order_confirmation", order_id=order.id)
+
+@login_required
+def invoice_view(request, order_id):
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user,
+        payment_status="COMPLETED"
+    )
+    return render(request, "store/invoice.html", {"order": order})

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 900px;">
+
+    <h1 class="text-center mb-5 fw-bold">My Orders</h1>
+
+    {% if orders %}
+        <div class="order-list">
+            {% for order in orders %}
+                <div class="order-card mb-4 p-4 rounded">
+
+                    <div class="order-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            Order #{{ order.id }}
+                        </h5>
+
+                        {% if order.payment_status == "COMPLETED" %}
+                            <span class="order-status completed">PAID</span>
+                        {% else %}
+                            <span class="order-status pending">PENDING</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="order-body mt-3">
+                        <p class="mb-1">
+                            <strong>Total:</strong>
+                            ₹{{ order.total_amount|floatformat:2 }}
+                        </p>
+
+                        <p class="mb-1">
+                            <strong>Payment Status:</strong>
+                            {{ order.payment_status }}
+                        </p>
+
+                        <p class="mb-0 text-muted small">
+                            {{ order.created_at|date:"M d, Y • h:i A" }}
+                        </p>
+                    </div>
+
+                    <div class="order-footer mt-3">
+                        <a href="{% url 'store:order_confirmation' order.id %}"
+                           class="btn btn-outline-light btn-sm">
+                            View Details
+                        </a>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center">
+            You have not placed any orders yet.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

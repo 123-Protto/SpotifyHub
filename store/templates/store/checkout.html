@@ -71,11 +71,17 @@
 <script>
 document.getElementById("pay-btn").addEventListener("click", function () {
 
+    const buyNow = "{{ buy_now|default:'' }}";  // from checkout context
+
     fetch("/store/cashfree/create-order/", {
         method: "POST",
         headers: {
+            "Content-Type": "application/json",
             "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
+        },
+        body: JSON.stringify({
+            buy_now: buyNow || null
+        })
     })
     .then(res => res.json())
     .then(data => {
@@ -85,9 +91,7 @@ document.getElementById("pay-btn").addEventListener("click", function () {
             return;
         }
 
-        const cashfree = Cashfree({
-            mode: "sandbox" // change to "production" later
-        });
+        const cashfree = Cashfree({ mode: "sandbox" });
 
         cashfree.checkout({
             paymentSessionId: data.payment_session_id,

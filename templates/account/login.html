@@ -8,14 +8,18 @@
 
 {% block content %}
 <div class="auth-wrapper">
+
     <div class="auth-card">
 
-        <h1 class="auth-title">{% trans "Sign In" %}</h1>
+        <h1 class="auth-title text-center">
+            {% trans "Sign In" %}
+        </h1>
 
-        <p class="auth-subtitle">
+        <!-- ✅ FIXED VISIBILITY -->
+        <p class="auth-subtitle text-center">
             {% blocktrans %}
                 Don’t have an account?
-                <a href="{{ signup_url }}">Sign up</a>
+                <a href="{{ signup_url }}" class="auth-link">Sign up</a>
             {% endblocktrans %}
         </p>
 
@@ -23,6 +27,8 @@
         {% element form method="post" action=login_url tags="entrance,login" %}
             {% slot body %}
                 {% csrf_token %}
+
+                <!-- ✅ FORM FIELDS RENDERED SAFELY -->
                 {% element fields form=form %}
                 {% endelement %}
 
@@ -41,11 +47,12 @@
         {% endelement %}
 
         {% if SOCIALACCOUNT_ENABLED %}
-            <div class="mt-4">
+            <div class="mt-4 text-center">
                 {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
             </div>
         {% endif %}
 
     </div>
+
 </div>
 {% endblock content %}

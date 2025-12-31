@@ -20,27 +20,30 @@ SECRET_KEY = os.getenv(
     "django-insecure-fallback-only-for-local-dev"
 )
 
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".onrender.com",
+    "*",  # Safe for Render
 ]
 
-# Render / proxy fix
+# Render / proxy SSL fix
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # ============================================================
 # INSTALLED APPS
 # ============================================================
 INSTALLED_APPS = [
+    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
 
     # Project apps
     "core",
@@ -49,7 +52,6 @@ INSTALLED_APPS = [
     "store",
 
     # Third-party
-    "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -58,8 +60,6 @@ INSTALLED_APPS = [
     "cloudinary",
     "cloudinary_storage",
 ]
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 SITE_ID = 1
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -70,7 +70,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise must be here
+    # WhiteNoise must be directly after SecurityMiddleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -79,6 +79,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    # Allauth
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -108,7 +110,7 @@ TEMPLATES = [
 ]
 
 # ============================================================
-# DATABASE (SQLite – OK for Render free)
+# DATABASE (SQLite – Render Free Tier Friendly)
 # ============================================================
 DATABASES = {
     "default": {
@@ -120,30 +122,36 @@ DATABASES = {
 # ============================================================
 # STATIC FILES (RENDER SAFE)
 # ============================================================
-# STATIC FILES
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 if DEBUG:
     STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-
-# CLOUDINARY
+# ============================================================
+# CLOUDINARY (MEDIA FILES)
+# ============================================================
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
-MEDIA_URL = "/media/"
-
+# ============================================================
+# STORAGE BACKENDS (DJANGO 5.2+)
+# ============================================================
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # ============================================================
-# AUTH / ALLAUTH
+# AUTHENTICATION / ALLAUTH
 # ============================================================
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
@@ -171,7 +179,7 @@ ACCOUNT_RATE_LIMITS = {
 }
 
 # ============================================================
-# CSRF / SECURITY (RENDER SAFE)
+# CSRF & COOKIE SECURITY
 # ============================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
@@ -183,7 +191,7 @@ CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 
 # ============================================================
-# LANGUAGE / TIME
+# LANGUAGE & TIMEZONE
 # ============================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -191,7 +199,7 @@ USE_I18N = True
 USE_TZ = True
 
 # ============================================================
-# CASHFREE
+# CASHFREE PAYMENT GATEWAY
 # ============================================================
 CASHFREE_CLIENT_ID = os.getenv("CASHFREE_CLIENT_ID")
 CASHFREE_CLIENT_SECRET = os.getenv("CASHFREE_CLIENT_SECRET")
@@ -200,13 +208,16 @@ CASHFREE_BASE_URL = os.getenv(
     "CASHFREE_BASE_URL",
     "https://sandbox.cashfree.com/pg"
 )
+CASHFREE_WEBHOOK_URL ="https://24d3779e7486.ngrok-free.app/store/cashfree/webhook/"
+CASHFREE_BOOKING_WEBHOOK_URL ="https://24d3779e7486.ngrok-free.app/booking/cashfree/webhook/"
+
 
 # ============================================================
-# EMAIL (DEV)
+# EMAIL (DEV DEFAULT)
 # ============================================================
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # ============================================================
-# DEFAULT FIELD
+# DEFAULT PRIMARY KEY
 # ============================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

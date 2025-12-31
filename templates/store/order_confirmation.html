@@ -1,12 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation</title>
-</head>
-<body>
-    <h1>Your Order Has Been Confirmed!</h1>
-    <p>Thank you for your purchase.</p>
-    </body>
-</html>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order Confirmed{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 900px;">
+
+    <!-- SUCCESS HEADER -->
+    <div class="text-center mb-5">
+        <div class="success-icon mb-3">✓</div>
+        <h1 class="fw-bold text-success">Order Confirmed!</h1>
+        <p class="text-muted">
+            Thank you for your purchase. Your order has been successfully placed.
+        </p>
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="card order-card mb-4 p-4">
+        <h4 class="mb-3">Order Summary</h4>
+
+        <div class="row mb-2">
+            <div class="col-sm-6"><strong>Order ID:</strong></div>
+            <div class="col-sm-6 text-sm-end">#{{ order.id }}</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-6"><strong>Order Date:</strong></div>
+            <div class="col-sm-6 text-sm-end">
+                {{ order.created_at|date:"M d, Y • h:i A" }}
+            </div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-6"><strong>Status:</strong></div>
+            <div class="col-sm-6 text-sm-end">
+                <span class="badge status-{{ order.order_status|lower }}">
+                    {{ order.order_status }}
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6"><strong>Payment:</strong></div>
+            <div class="col-sm-6 text-sm-end">
+                {{ order.payment_status }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER PROGRESS -->
+    <div class="card order-card mb-4 p-4">
+        <h4 class="mb-4">Order Progress</h4>
+
+        <div class="order-timeline">
+            <div class="timeline-step active">
+                <span>1</span>
+                <label>Confirmed</label>
+            </div>
+
+            <div class="timeline-step {% if order.order_status in 'PROCESSING SHIPPED DELIVERED' %}active{% endif %}">
+                <span>2</span>
+                <label>Processing</label>
+            </div>
+
+            <div class="timeline-step {% if order.order_status in 'SHIPPED DELIVERED' %}active{% endif %}">
+                <span>3</span>
+                <label>Shipped</label>
+            </div>
+
+            <div class="timeline-step {% if order.order_status == 'DELIVERED' %}active{% endif %}">
+                <span>4</span>
+                <label>Delivered</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHIPPING ADDRESS -->
+    <div class="card order-card mb-4 p-4">
+        <h4 class="mb-3">Shipping Address</h4>
+
+        {% if order.shipping %}
+            <p class="fw-semibold mb-1">{{ order.shipping.full_name }}</p>
+            <p class="mb-1">{{ order.shipping.address_line_1 }}</p>
+
+            {% if order.shipping.address_line_2 %}
+                <p class="mb-1">{{ order.shipping.address_line_2 }}</p>
+            {% endif %}
+
+            <p class="mb-1">
+                {{ order.shipping.city }},
+                {{ order.shipping.state }} - {{ order.shipping.pincode }}
+            </p>
+
+            <p class="mb-2">📞 {{ order.shipping.phone }}</p>
+
+            {% if order.shipping.tracking_number %}
+                <hr>
+                <p class="mb-1"><strong>Courier:</strong> {{ order.shipping.courier_name }}</p>
+                <p class="mb-2"><strong>Tracking ID:</strong> {{ order.shipping.tracking_number }}</p>
+
+                {% if order.shipping.tracking_url %}
+                    <a href="{{ order.shipping.tracking_url }}"
+                       target="_blank"
+                       class="btn btn-sm btn-outline-primary">
+                        Track Shipment
+                    </a>
+                {% endif %}
+            {% endif %}
+        {% else %}
+            <p class="text-warning mb-0">
+                Shipping details not available yet.
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- ORDER ITEMS -->
+    <div class="card order-card mb-4 p-4">
+        <h4 class="mb-3">Items Purchased</h4>
+
+        {% for item in order.items.all %}
+            <div class="d-flex justify-content-between border-bottom py-2">
+                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                <span>₹{{ item.sub_total|floatformat:2 }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+            <span>Total</span>
+            <span>₹{{ order.total_amount|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="text-center mt-4">
+        <a href="{% url 'store:my_orders' %}" class="btn btn-outline-light me-2">
+            View My Orders
+        </a>
+
+        <a href="{% url 'store:shop' %}" class="btn btn-success me-2">
+            Continue Shopping
+        </a>
+
+        <a href="{% url 'store:invoice' order.id %}"
+           class="btn btn-outline-primary">
+            📄 View Invoice
+        </a>
+    </div>
+
+</div>
+{% endblock %}

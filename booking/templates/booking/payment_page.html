@@ -57,6 +57,7 @@
         <p><strong>Event:</strong> {{ booking.event.name }}</p>
         <p><strong>Total Amount:</strong> ₹{{ booking.total_price }}</p>
 
+        <!-- ✅ SINGLE PAY BUTTON -->
         <button id="pay-btn" class="btn btn-success btn-lg w-100 mt-4">
             Pay with Cashfree
         </button>
@@ -65,16 +66,18 @@
 </div>
 
 <!-- ===================== CASHFREE SDK ===================== -->
-<!-- ✅ CORRECT CASHFREE SDK -->
 <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 
 <script>
 document.getElementById("pay-btn").addEventListener("click", function () {
+    console.log("🟢 Pay button clicked");
 
-    console.log("🟢 Launching Cashfree Checkout");
+    if (typeof Cashfree === "undefined") {
+        alert("Cashfree SDK failed to load");
+        return;
+    }
 
-    // ✅ Cashfree is now defined
-    const cashfree = new Cashfree({
+    const cashfree = Cashfree({
         mode: "{{ mode }}"   // "sandbox" or "production"
     });
 
@@ -85,7 +88,5 @@ document.getElementById("pay-btn").addEventListener("click", function () {
 });
 </script>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

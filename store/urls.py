@@ -36,5 +36,17 @@ urlpatterns = [
     path("my-orders/", views.my_orders, name="my_orders"),
 
     path("cart/add/<int:product_id>/", views.ajax_add_to_cart, name="ajax_add_to_cart"),
+    # store/urls.py
+
+    path(
+        "confirm-delivery/<int:order_id>/",
+        views.confirm_delivery,
+        name="confirm_delivery"
+    ),
+    path(
+    "invoice/<int:order_id>/",
+    views.invoice_view,
+    name="invoice"
+),
 
 ]
