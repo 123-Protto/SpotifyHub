@@ -5,6 +5,7 @@
     box-sizing: border-box;
 }
 body {
+    position: relative; 
     font-family: Arial, sans-serif;
     color: #fff;
     min-height: 100vh;
@@ -29,6 +30,7 @@ body {
 
     filter: brightness(0.45) contrast(1.05);
     z-index: 0;
+    pointer-events: none; 
 }
 
 .glass-navbar,
