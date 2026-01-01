@@ -781,6 +781,17 @@ footer {
    SEAT SELECTION — PREMIUM
 ================================ */
 .seat {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .seat.available:hover {
@@ -794,6 +805,28 @@ footer {
     filter: grayscale(70%);
     opacity: 0.6;
 }
+/* ==============================
+   SEAT LAYOUT FIX
+============================== */
+/* Seat section container */
+.seat-section {
+    max-width: 320px;     /* controls how many seats per row */
+    margin: 0 auto 24px;  /* center on page */
+}
+.row-label {
+    text-align: center;
+    margin: 10px 0 6px;
+    font-weight: 700;
+    color: #ff9f43;
+}
+.seat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 44px);
+    gap: 10px;
+    justify-content: center;
+    margin: 12px 0;
+}
+
 
 /* ================================
    CHECKOUT & PAYMENT FEEDBACK
