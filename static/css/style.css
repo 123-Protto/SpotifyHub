@@ -10,6 +10,7 @@ html, body {
 
 body {
     position: relative; 
+    isolation: isolate;
     font-family: Arial, sans-serif;
     color: #fff;
     min-height: 100vh;
@@ -921,7 +922,7 @@ button, a {
 @media (max-width: 768px) {
 
     body {
-        padding-top: 88px;
+        padding-top: 120px;
     }
 
     .bg-overlay {
