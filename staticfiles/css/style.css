@@ -11,35 +11,26 @@ body {
     margin: 0;
     padding-top: 120px;
 
-    /* Background image */
-    background-image: url("../images/bg.jpg");
     background-repeat: no-repeat;
     background-position: center top;
     background-size: cover;
-    background-attachment: fixed;
-
-    /* ❌ DO NOT use filter here */
 }
 
-/* Background dim overlay */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
+    will-change: transform;
 
     background-image: url("../images/bg.jpg");
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
 
-    /* ✅ DIM CONTROL (adjust this value) */
-    filter: brightness(0.45);
-
-    /* Optional contrast boost */
-    contrast: 1.05;
-
+    filter: brightness(0.45) contrast(1.05);
     z-index: -1;
 }
+
 
 /* Ensure content stays above background */
 body > * {
@@ -905,4 +896,22 @@ button, a {
     font-weight: 600;
     background: rgba(13,110,253,0.18);
     color: #0d6efd;
+}
+/* ================================
+   MOBILE PERFORMANCE FIXES
+================================ */
+
+@media (max-width: 768px) {
+    body::before {
+        background-attachment: scroll;
+    }
+}
+
+@media (max-width: 576px) {
+    .event-card:hover,
+    .product-card:hover,
+    .cart-item-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
 }
