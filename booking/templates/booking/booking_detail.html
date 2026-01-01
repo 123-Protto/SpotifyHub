@@ -66,7 +66,7 @@
 
             <p>
                 <strong>Payment Status:</strong>
-                <span class="{% if booking.payment_status == 'successful' %}status-success{% else %}status-pending{% endif %}">
+                <span class="{% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}status-success{% else %}status-pending{% endif %}">
                     {{ booking.payment_status|capfirst }}
                 </span>
             </p>
@@ -82,7 +82,7 @@
 
             <div class="mt-5 text-center border-top pt-4">
 
-                {% if booking.payment_status == "successful" %}
+                {% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}
 
                     <h5 class="text-success mb-3">🎟️ Your Tickets</h5>
 
@@ -101,7 +101,7 @@
                     </a>
 
                     <p class="text-muted mt-3">
-                        If payment is completed, please refresh this page once.
+                        If you have completed payment, please refresh this page once.
                     </p>
 
                 {% endif %}

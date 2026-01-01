@@ -210,18 +210,19 @@ def process_payment_view(request, booking_id):
 def cashfree_webhook(request):
     try:
         payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
+    except Exception as e:
+        logger.error("Invalid webhook JSON")
         return JsonResponse({"status": "invalid json"}, status=400)
 
     event_type = payload.get("type")
     logger.info(f"Cashfree webhook received: {event_type}")
 
-    # Allow dashboard test webhook
+    # ✅ Allow dashboard test webhook
     if event_type == "TEST_WEBHOOK":
         return JsonResponse({"status": "ok"})
 
-    # ✅ CORRECT EVENT NAME
-    if event_type != "PAYMENT_SUCCESS_WEBHOOK":
+    # ✅ Correct success event
+    if event_type != "PAYMENT_SUCCESS":
         return JsonResponse({"status": "ignored"})
 
     data = payload.get("data", {})
@@ -237,9 +238,11 @@ def cashfree_webhook(request):
 
     booking = get_object_or_404(Booking, cashfree_order_id=order_id)
 
+    # 🔁 Idempotency guard
     if booking.is_paid:
         return JsonResponse({"status": "already processed"})
 
+    # ✅ Mark booking paid
     booking.is_paid = True
     booking.payment_status = Booking.PAYMENT_SUCCESSFUL
     booking.cashfree_payment_id = str(payment.get("cf_payment_id"))
@@ -249,6 +252,7 @@ def cashfree_webhook(request):
         "cashfree_payment_id",
     ])
 
+    # 🎟️ Generate tickets safely (avoid duplicates)
     for seat in booking.seats.all():
         Ticket.objects.get_or_create(
             user=booking.user,
@@ -258,7 +262,35 @@ def cashfree_webhook(request):
         )
 
     logger.info(f"Payment confirmed for booking {booking.id}")
+
     return JsonResponse({"status": "success"})
+
+
+
+# =====================================================
+# 6) BOOKING DETAIL
+# =====================================================
+@login_required
+def booking_detail_view(request, booking_id):
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        user=request.user
+    )
+
+    tickets = Ticket.objects.filter(
+        booking_ref=str(booking.id),
+        user=request.user
+    )
+
+    return render(
+        request,
+        "booking/booking_detail.html",
+        {
+            "booking": booking,
+            "tickets": tickets,
+        }
+    )
 
 
 # =====================================================
