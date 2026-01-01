@@ -204,25 +204,22 @@ def process_payment_view(request, booking_id):
     )
 # =====================================================
 # 5) CASHFREE WEBHOOK
-# =====================================================
 @csrf_exempt
 @transaction.atomic
 def cashfree_webhook(request):
     try:
         payload = json.loads(request.body.decode("utf-8"))
-    except Exception as e:
-        logger.error("Invalid webhook JSON")
+    except Exception:
         return JsonResponse({"status": "invalid json"}, status=400)
 
-    event_type = payload.get("type")
-    logger.info(f"Cashfree webhook received: {event_type}")
+    logger.warning("FULL CASHFREE PAYLOAD: %s", payload)
 
-    # ✅ Allow dashboard test webhook
+    event_type = payload.get("type")
+
     if event_type == "TEST_WEBHOOK":
         return JsonResponse({"status": "ok"})
 
-    # ✅ Correct success event
-    if event_type != "PAYMENT_SUCCESS":
+    if event_type not in ["PAYMENT_SUCCESS_WEBHOOK", "ORDER_PAID"]:
         return JsonResponse({"status": "ignored"})
 
     data = payload.get("data", {})
@@ -238,21 +235,14 @@ def cashfree_webhook(request):
 
     booking = get_object_or_404(Booking, cashfree_order_id=order_id)
 
-    # 🔁 Idempotency guard
     if booking.is_paid:
         return JsonResponse({"status": "already processed"})
 
-    # ✅ Mark booking paid
     booking.is_paid = True
     booking.payment_status = Booking.PAYMENT_SUCCESSFUL
     booking.cashfree_payment_id = str(payment.get("cf_payment_id"))
-    booking.save(update_fields=[
-        "is_paid",
-        "payment_status",
-        "cashfree_payment_id",
-    ])
+    booking.save()
 
-    # 🎟️ Generate tickets safely (avoid duplicates)
     for seat in booking.seats.all():
         Ticket.objects.get_or_create(
             user=booking.user,
@@ -261,7 +251,7 @@ def cashfree_webhook(request):
             booking_ref=str(booking.id),
         )
 
-    logger.info(f"Payment confirmed for booking {booking.id}")
+    logger.warning(f"✅ BOOKING {booking.id} MARKED AS PAID")
 
     return JsonResponse({"status": "success"})
 
