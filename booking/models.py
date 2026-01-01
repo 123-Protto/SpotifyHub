@@ -2,6 +2,8 @@ import uuid
 from django.db import models
 from django.conf import settings
 from events.models import Event, Seat
+from django.core.validators import RegexValidator
+
 
 User = settings.AUTH_USER_MODEL
 
@@ -13,7 +15,7 @@ class BookingContact(models.Model):
     )
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -33,7 +35,7 @@ class ShippingAddress(models.Model):
 
     full_name = models.CharField(max_length=255)
     phone_number = models.CharField(
-        max_length=20, blank=True, null=True
+        max_length=10, blank=True, null=True
     )
 
     street_address = models.CharField(max_length=255)
