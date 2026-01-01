@@ -26,18 +26,25 @@ body {
 
 /* Background dim overlay */
 .bg-overlay {
-    position: fixed;
+    position: absolute;   /* 🔥 NOT fixed */
     inset: 0;
-    height: 100%;
-    background-image: url("../images/bg.jpg");
+    min-height: 100vh;
+
+    background:
+        linear-gradient(
+            rgba(0,0,0,0.55),
+            rgba(0,0,0,0.55)
+        ),
+        url("../images/bg.jpg");
+
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
 
-    filter: brightness(0.45) contrast(1.05);
     z-index: -1;
-    pointer-events: none; 
+    pointer-events: none;
 }
+
 
 .glass-navbar,
 .main-wrapper,
