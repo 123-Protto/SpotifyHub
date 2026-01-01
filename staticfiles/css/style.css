@@ -342,19 +342,6 @@ footer {
     text-align: center;
     padding: 20px 0;
 }
-
-/* ================================
-   RESPONSIVE
-================================ */
-@media (max-width: 768px) {
-    body {
-        padding-top: 90px;
-    }
-
-    .cart-item-card {
-        flex-direction: column;
-    }
-}
 /* ================================
    HERO ANIMATION
 ================================ */

@@ -4,31 +4,33 @@
 * {
     box-sizing: border-box;
 }
-
 body {
     font-family: Arial, sans-serif;
     color: #fff;
     min-height: 100vh;
     margin: 0;
     padding-top: 120px;
-    background: none;
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: cover;
+
+    /* ❌ DO NOT use filter here */
 }
 
-/* ================================
-   BACKGROUND OVERLAY (SAFE)
-================================ */
+/* Background dim overlay */
 .bg-overlay {
     position: fixed;
     inset: 0;
+
     background-image: url("../images/bg.jpg");
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
+
     filter: brightness(0.45) contrast(1.05);
     z-index: 0;
 }
 
-/* Ensure content is above background */
 .glass-navbar,
 .main-wrapper,
 .page-container,
@@ -37,16 +39,15 @@ footer {
     z-index: 2;
 }
 
-/* ================================
-   TYPOGRAPHY
-================================ */
+
+/* Headings */
 h1, h2, h3, h4, p, .lead {
     color: #ffffff;
     text-shadow: 4px 4px 4px rgba(0,0,0,0.7);
 }
 
 /* ================================
-   GLASS NAVBAR
+   PREMIUM GLASS NAVBAR
 ================================ */
 .glass-navbar {
     position: fixed;
@@ -54,22 +55,39 @@ h1, h2, h3, h4, p, .lead {
     left: 0;
     right: 0;
     z-index: 1050;
+
     width: calc(100% - 28px);
     max-width: 1200px;
     margin: 0 auto;
+
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+
     border-radius: 18px;
     border: 1px solid rgba(255,255,255,0.12);
     box-shadow: 0 20px 45px rgba(0,0,0,0.65);
+
     padding: 14px 24px;
+}
+
+.glass-navbar .container {
+    display: flex;
+    align-items: center;
 }
 
 .glass-navbar .navbar-brand {
     font-size: 1.3rem;
     font-weight: 700;
     color: #fff !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.glass-navbar .navbar-nav {
+    align-items: center;
+    gap: 6px;
 }
 
 .glass-navbar .nav-link {
@@ -90,18 +108,86 @@ h1, h2, h3, h4, p, .lead {
     color: #0d6efd !important;
 }
 
+.glass-navbar .btn {
+    border-radius: 22px;
+    padding: 6px 18px;
+    font-weight: 600;
+    height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+/* ================================
+   MOBILE NAVBAR
+================================ */
+@media (max-width: 991px) {
+    body {
+        padding-top: 100px;
+    }
+
+    .glass-navbar {
+        top: 8px;
+        width: calc(100% - 16px);
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .glass-navbar .navbar-collapse {
+        margin-top: 12px;
+        background: rgba(0,0,0,0.75);
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .glass-navbar .nav-link {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ================================
+   HERO SECTION (CONTENT ONLY)
+================================ */
+.home-hero {
+    position: relative;
+    min-height: 100vh;
+    padding-top: 120px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.home-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 900px;
+    padding: 0 20px;
+}
+
+/* ================================
+   PAGE CONTAINER
+================================ */
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
 /* ================================
    BUTTONS
 ================================ */
 .btn {
     font-weight: 600;
     border-radius: 6px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
 }
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
 }
 
 .btn-primary {
@@ -115,57 +201,54 @@ h1, h2, h3, h4, p, .lead {
 }
 
 /* ================================
-   PAGE CONTAINER
+   EVENTS PAGE
 ================================ */
-.page-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    animation: pageFade 0.6s ease forwards;
+.events-hero {
+    min-height: calc(100vh - 120px);
+    background: rgba(0,0,0,0.65);
+    padding: 120px 20px 80px;
 }
 
-@keyframes pageFade {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ================================
-   HERO SECTION
-================================ */
-.home-hero {
-    min-height: 100vh;
-    padding-top: 120px;
+.event-filters {
     display: flex;
-    align-items: center;
     justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.home-hero-content {
-    text-align: center;
-    max-width: 900px;
-    padding: 0 20px;
+.filter-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
 }
 
-/* ================================
-   EVENTS & STORE CARDS
-================================ */
-.event-card,
-.product-card {
+.filter-btn:hover,
+.filter-btn.active {
+    background: rgba(13,110,253,0.25);
+    color: #0d6efd;
+}
+
+/* Event cards */
+.event-card {
     background: rgba(0,0,0,0.82);
     border-radius: 16px;
+    overflow: hidden;
     border: 1px solid rgba(255,255,255,0.15);
     box-shadow: 0 18px 40px rgba(0,0,0,0.6);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
-.event-card:hover,
-.product-card:hover {
+.event-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 26px 60px rgba(0,0,0,0.75);
 }
 
 .event-thumb {
     height: 200px;
+    position: relative;
 }
 
 .event-thumb img {
@@ -174,54 +257,652 @@ h1, h2, h3, h4, p, .lead {
     object-fit: cover;
 }
 
+.event-body {
+    padding: 20px;
+}
+
 /* ================================
-   CART
+   STORE PAGE
 ================================ */
+.shop-page {
+    padding-top: 40px;
+}
+
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 28px;
+}
+
+.product-card {
+    background: rgba(0,0,0,0.85);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 35px rgba(0,0,0,0.6);
+}
+
+.product-image-wrapper {
+    height: 220px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.product-image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ================================
+   CART PAGE
+================================ */
+.cart-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
 .cart-item-card {
     display: flex;
     gap: 20px;
     padding: 18px;
+    margin-bottom: 18px;
     background: rgba(0,0,0,0.78);
     border-radius: 16px;
 }
 
-/* ================================
-   AUTH / BOOKING
-================================ */
-.booking-card,
-.auth-card {
-    background: rgba(0,0,0,0.78);
-    border-radius: 20px;
-    padding: 36px;
-    max-width: 520px;
-    margin: auto;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+.cart-image {
+    width: 130px;
+    height: 130px;
+    background: #fff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cart-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 /* ================================
    FOOTER
 ================================ */
 footer {
+    background: transparent;
+    color: #ddd;
     text-align: center;
     padding: 20px 0;
-    color: #ddd;
 }
 
 /* ================================
-   ANIMATIONS
+   RESPONSIVE
 ================================ */
+@media (max-width: 768px) {
+    body {
+        padding-top: 90px;
+    }
+
+    .cart-item-card {
+        flex-direction: column;
+    }
+}
+/* ================================
+   HERO ANIMATION
+================================ */
+
+/* Initial hidden state */
+.animate-hero > * {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.9s ease forwards;
+}
+
+/* Stagger animation */
+.animate-hero .hero-title {
+    animation-delay: 0.2s;
+}
+
+.animate-hero .hero-subtitle {
+    animation-delay: 0.4s;
+}
+
+.animate-hero .hero-buttons {
+    animation-delay: 0.6s;
+    transform: scale(0.95);
+}
+
+/* Keyframes */
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ================================
+   NAVBAR ANIMATION
+================================ */
+
+/* Initial navbar state */
 .animate-navbar {
+    opacity: 0;
+    transform: translateY(-20px);
     animation: navbarDrop 0.8s ease forwards;
 }
 
-@keyframes navbarDrop {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Brand animation */
+.animate-navbar .navbar-brand {
+    opacity: 0;
+    transform: scale(0.9);
+    animation: brandPop 0.6s ease forwards;
+    animation-delay: 0.4s;
+}
+
+/* Nav links stagger */
+.animate-navbar .nav-link {
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: navFade 0.5s ease forwards;
+}
+
+/* Stagger delays */
+.animate-navbar .nav-item:nth-child(1) .nav-link { animation-delay: 0.5s; }
+.animate-navbar .nav-item:nth-child(2) .nav-link { animation-delay: 0.6s; }
+.animate-navbar .nav-item:nth-child(3) .nav-link { animation-delay: 0.7s; }
+.animate-navbar .nav-item:nth-child(4) .nav-link { animation-delay: 0.8s; }
+
+/* Buttons */
+.animate-navbar .btn {
+    opacity: 0;
+    transform: scale(0.9);
+    animation: buttonPop 0.5s ease forwards;
+    animation-delay: 0.9s;
 }
 
 /* ================================
-   MOBILE (FINAL & SAFE)
+   KEYFRAMES
 ================================ */
+@keyframes navbarDrop {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes brandPop {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes navFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes buttonPop {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+/* ================================
+   BOOKING PAGE
+================================ */
+.booking-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.booking-card {
+    background: rgba(0,0,0,0.78);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.booking-title {
+    text-align: center;
+    font-weight: 800;
+    margin-bottom: 24px;
+}
+
+.event-header {
+    text-align: center;
+}
+
+.event-name {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.event-meta {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 14px;
+}
+
+.price-badge {
+    display: inline-block;
+    background: rgba(13,110,253,0.2);
+    color: #0d6efd;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.divider {
+    margin: 26px 0;
+    border-color: rgba(255,255,255,0.15);
+}
+
+.ticket-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.ticket-input:focus {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+.total-price {
+    margin: 22px 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.confirm-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    border: none;
+}
+/* ================================
+   PREMIUM AUTH UI
+================================ */
+
+.auth-wrapper {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* Glass card */
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.85),
+        rgba(0,0,0,0.7)
+    );
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-radius: 22px;
+    padding: 36px 34px;
+    border: 1px solid rgba(255,255,255,0.14);
+
+    box-shadow:
+        0 40px 80px rgba(0,0,0,0.75),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+
+    animation: authFadeUp 0.8s ease forwards;
+}
+
+/* Title */
+.auth-title {
+    text-align: center;
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    margin-bottom: 10px;
+}
+
+/* Subtitle */
+.auth-subtitle {
+    text-align: center;
+    font-size: 0.95rem;
+    opacity: 0.85;
+    margin-bottom: 28px;
+}
+
+.auth-subtitle a {
+    color: #4da3ff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-subtitle a:hover {
+    text-decoration: underline;
+}
+
+/* Form labels */
+.auth-card label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+    opacity: 0.9;
+}
+
+/* Inputs */
+.auth-card input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 0.95rem;
+
+    transition: all 0.25s ease;
+}
+
+.auth-card input::placeholder {
+    color: rgba(255,255,255,0.45);
+}
+
+.auth-card input:focus {
+    outline: none;
+    border-color: #4da3ff;
+    box-shadow: 0 0 0 3px rgba(77,163,255,0.25);
+    background: rgba(255,255,255,0.08);
+}
+
+/* Buttons */
+.auth-card button,
+.auth-card .btn {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-size: 0.95rem;
+
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    border: none;
+
+    box-shadow:
+        0 14px 35px rgba(13,110,253,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 18px 45px rgba(13,110,253,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+/* Social login spacing */
+.auth-card .socialaccount_providers {
+    margin-top: 24px;
+}
+
+/* Animation */
+@keyframes authFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(35px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+/* ================================
+   REMEMBER ME – FINAL CLEAN VERSION
+================================ */
+
+.auth-card .form-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.auth-card .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #0d6efd;
+}
+
+.auth-card .form-check-label {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: rgba(255,255,255,0.9);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.auth-card .form-check:hover .form-check-label {
+    color: #ffffff;
+}
+/* =========================================================
+   🔥 PRO UI ENHANCEMENTS — SAFE ADD-ON (NON-BREAKING)
+   Append this at the END of your CSS file
+========================================================= */
+
+/* ================================
+   MICRO INTERACTIONS
+================================ */
+.hover-lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 50px rgba(0,0,0,0.75);
+}
+
+.focus-glow:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.35);
+}
+
+/* ================================
+   SKELETON LOADERS
+================================ */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.18),
+        transparent
+    );
+    animation: skeletonMove 1.3s infinite;
+}
+@keyframes skeletonMove {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+}
+
+/* ================================
+   EVENT & PRODUCT CARD POLISH
+================================ */
+.event-card,
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.event-card:hover,
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 26px 60px rgba(0,0,0,0.75);
+}
+
+/* ================================
+   SEAT SELECTION — PREMIUM
+================================ */
+.seat {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.seat.available:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 14px rgba(40,167,69,0.65);
+}
+.seat.selected {
+    box-shadow: 0 0 16px rgba(13,110,253,0.85);
+}
+.seat.sold {
+    filter: grayscale(70%);
+    opacity: 0.6;
+}
+
+/* ================================
+   CHECKOUT & PAYMENT FEEDBACK
+================================ */
+.payment-status {
+    padding: 16px;
+    border-radius: 14px;
+    text-align: center;
+    font-weight: 700;
+    margin-top: 20px;
+}
+.payment-status.success {
+    background: rgba(40,167,69,0.18);
+    color: #28a745;
+}
+.payment-status.failed {
+    background: rgba(220,53,69,0.18);
+    color: #dc3545;
+}
+
+/* ================================
+   CART & ORDER INTERACTIONS
+================================ */
+.cart-item-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.cart-item-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+}
+
+/* ================================
+   BUTTON ENHANCEMENTS
+================================ */
+.btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+}
+.btn:active {
+    transform: translateY(0);
+}
+
+/* ================================
+   UI UTILITIES (OPTIONAL USE)
+================================ */
+.rounded-xl { border-radius: 20px; }
+.shadow-lg  { box-shadow: 0 30px 70px rgba(0,0,0,0.75); }
+.text-muted-soft {
+    color: rgba(255,255,255,0.65) !important;
+}
+.divider-soft {
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 24px 0;
+}
+
+/* ================================
+   PAGE TRANSITION FADE
+================================ */
+.page-container {
+    animation: pageFade 0.6s ease forwards;
+}
+@keyframes pageFade {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================================
+   ACCESSIBILITY & PERFORMANCE
+================================ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Better tap targets (mobile UX) */
+button, a {
+    min-height: 44px;
+}
+
+/* ================================
+   OPTIONAL BADGES (EVENT / STORE)
+================================ */
+.badge-soft {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(13,110,253,0.18);
+    color: #0d6efd;
+}
+/* =========================================================
+   📱 MOBILE FIX — FINAL (SAFE + PRO)
+   Append at END of CSS
+========================================================= */
 @media (max-width: 768px) {
 
     body {
@@ -239,14 +920,29 @@ footer {
         border-radius: 14px;
     }
 
-    .glass-navbar .nav-link {
-        text-align: center;
-        padding: 10px;
-    }
-
     .home-hero {
         min-height: auto;
         padding: 40px 0 60px;
+    }
+
+    .home-hero .d-flex {
+        gap: 16px;
+    }
+
+    .home-hero h3 {
+        font-size: 1.4rem;
+    }
+
+    .event-card {
+        border-radius: 14px;
+    }
+
+    .event-thumb {
+        height: 160px;
+    }
+
+    .event-body {
+        padding: 14px;
     }
 
     .product-list {
@@ -254,11 +950,35 @@ footer {
         gap: 18px;
     }
 
+    .product-image-wrapper {
+        height: 180px;
+    }
+
     .cart-item-card {
+        padding: 14px;
+        gap: 14px;
         flex-direction: column;
     }
 
-    button, a, .btn {
+    .cart-image {
+        width: 100%;
+        height: 160px;
+    }
+
+    .booking-card,
+    .auth-card {
+        padding: 22px 20px;
+        border-radius: 18px;
+    }
+
+    .booking-title,
+    .auth-title {
+        font-size: 1.6rem;
+    }
+
+    button,
+    a,
+    .btn {
         min-height: 48px;
         font-size: 0.95rem;
     }
@@ -267,4 +987,158 @@ footer {
         padding: 16px 0;
         font-size: 0.85rem;
     }
+}
+
+/* ===========================
+   MY ORDERS – DARK THEME
+=========================== */
+
+.order-card {
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.order-header {
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    padding-bottom: 10px;
+}
+
+.order-header h5 {
+    color: #fff;
+    font-weight: 600;
+}
+
+.order-body p {
+    color: #eaeaea;
+}
+
+.order-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* STATUS COLORS */
+.order-status.pending {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.order-status.confirmed {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+}
+
+.order-status.processing {
+    background: rgba(0, 123, 255, 0.15);
+    color: #0d6efd;
+}
+
+.order-status.cancelled {
+    background: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+}
+
+.order-footer {
+    text-align: right;
+}
+/* ==============================
+   ORDER CONFIRMATION PAGE
+============================== */
+
+.order-card {
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 18px;
+    padding: 25px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    color: #fff;
+}
+
+.success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    font-size: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+.status-confirmed {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status-processing {
+    background: rgba(0, 123, 255, 0.2);
+    color: #0d6efd;
+}
+
+.order-card h4 {
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.order-timeline {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px 0;
+    position: relative;
+}
+
+.order-timeline::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #444;
+    transform: translateY(-50%);
+}
+
+.timeline-step {
+    position: relative;
+    text-align: center;
+    z-index: 1;
+}
+
+.timeline-step span {
+    display: block;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 8px;
+    border-radius: 50%;
+    background: #444;
+    color: #fff;
+    line-height: 38px;
+    font-weight: bold;
+}
+
+.timeline-step.active span {
+    background: #28a745;
+}
+
+.timeline-step label {
+    font-size: 0.85rem;
 }
