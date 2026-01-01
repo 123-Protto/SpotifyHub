@@ -66,7 +66,7 @@
 
             <p>
                 <strong>Payment Status:</strong>
-                <span class="{% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}status-success{% else %}status-pending{% endif %}">
+                <span class="{% if booking.payment_status == 'successful' %}status-success{% else %}status-pending{% endif %}">
                     {{ booking.payment_status|capfirst }}
                 </span>
             </p>
@@ -82,19 +82,16 @@
 
             <div class="mt-5 text-center border-top pt-4">
 
-                {% if booking.payment_status == booking.PAYMENT_SUCCESSFUL %}
+                {% if booking.payment_status == "successful" %}
 
-                    {% if tickets %}
-                        <h5 class="text-success mb-3">Your Tickets</h5>
-                        {% for ticket in tickets %}
-                            <a href="{% url 'booking:download_ticket' ticket.ticket_id %}"
-                               class="btn btn-success mb-2 d-block">
-                                🎟️ Download Ticket – {{ ticket.seat.section }} Seat {{ ticket.seat.seat_number }}
-                            </a>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-warning">Tickets are being generated. Please refresh.</p>
-                    {% endif %}
+                    <h5 class="text-success mb-3">🎟️ Your Tickets</h5>
+
+                    {% for ticket in tickets %}
+                        <a href="{% url 'booking:download_ticket' ticket.ticket_id %}"
+                           class="btn btn-success mb-2 d-block">
+                            Download Ticket – {{ ticket.seat.section }} Seat {{ ticket.seat.seat_number }}
+                        </a>
+                    {% endfor %}
 
                 {% else %}
 
@@ -104,15 +101,8 @@
                     </a>
 
                     <p class="text-muted mt-3">
-                        Payment completed? This page will update automatically.
+                        If payment is completed, please refresh this page once.
                     </p>
-
-                    <!-- 🔁 AUTO REFRESH (Cashfree webhook delay fix) -->
-                    <script>
-                        setTimeout(function () {
-                            window.location.reload();
-                        }, 5000);
-                    </script>
 
                 {% endif %}
 
