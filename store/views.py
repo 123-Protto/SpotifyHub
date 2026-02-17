@@ -201,9 +201,19 @@ def create_cashfree_order(request):
         timeout=15,
     )
 
-    if response.status_code != 200:
-        order.delete()
-        return JsonResponse({"error": "Cashfree failed"}, status=400)
+    if response.status_code not in [200, 201]:
+       print("===== CASHFREE ERROR =====")
+       print("Status Code:", response.status_code)
+       print("Response Text:", response.text)
+       print("Payload Sent:", payload)
+       print("==========================")
+
+    order.delete()
+    return JsonResponse({
+        "error": "Cashfree failed",
+        "details": response.text
+    }, status=400)
+
 
     order.payment_gateway_order_id = cashfree_order_id
     order.save(update_fields=["payment_gateway_order_id"])
