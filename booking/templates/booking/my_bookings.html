@@ -36,7 +36,7 @@
                                 {% endif %}
                             </p>
 
-                            {% if not booking.is_cancelled and not booking.is_paid %}
+                            {% if not booking.is_cancelled %}
                                 <form method="POST"
                                       action="{% url 'booking:cancel_booking' booking.id %}">
                                     {% csrf_token %}

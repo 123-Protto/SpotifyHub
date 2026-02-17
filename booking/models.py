@@ -159,8 +159,6 @@ class Booking(models.Model):
 
         # Optional: Prevent cancelling after payment
         # Remove this block if you want refund logic
-        if self.is_paid:
-            return False
 
         # Release seats (if any)
         self.seats.clear()
