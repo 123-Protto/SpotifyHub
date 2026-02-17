@@ -154,7 +154,6 @@ def create_cashfree_order(request):
         order_total = sum(item.sub_total() for item in cart_items)
         order_items = [(item.product, item.quantity) for item in cart_items]
 
-    # Create order
     address = Address.objects.filter(user=request.user).first()
 
     order = Order.objects.create(
@@ -174,12 +173,13 @@ def create_cashfree_order(request):
         )
 
     cashfree_order_id = f"store_{order.id}_{uuid.uuid4().hex[:8]}"
+
     payload = {
         "order_id": cashfree_order_id,
         "order_amount": float(order.total_amount),
         "order_currency": "INR",
         "order_meta": {
-            "notify_url": f"{settings.CASHFREE_WEBHOOK_URL}"
+            "notify_url": settings.CASHFREE_WEBHOOK_URL
         },
         "customer_details": {
             "customer_id": str(request.user.id),
@@ -202,20 +202,21 @@ def create_cashfree_order(request):
         timeout=15,
     )
 
+    # ❌ FAILURE
     if response.status_code not in [200, 201]:
-       print("===== CASHFREE ERROR =====")
-       print("Status Code:", response.status_code)
-       print("Response Text:", response.text)
-       print("Payload Sent:", payload)
-       print("==========================")
+        print("===== CASHFREE ERROR =====")
+        print("Status Code:", response.status_code)
+        print("Response Text:", response.text)
+        print("Payload Sent:", payload)
+        print("==========================")
 
-    order.delete()
-    return JsonResponse({
-        "error": "Cashfree failed",
-        "details": response.text
-    }, status=400)
+        order.delete()
+        return JsonResponse({
+            "error": "Cashfree failed",
+            "details": response.text
+        }, status=400)
 
-
+    # ✅ SUCCESS
     order.payment_gateway_order_id = cashfree_order_id
     order.save(update_fields=["payment_gateway_order_id"])
 
@@ -223,6 +224,7 @@ def create_cashfree_order(request):
         "payment_session_id": response.json()["payment_session_id"],
         "order_id": order.id,
     })
+
 
 
 # =====================================================
