@@ -449,5 +449,5 @@ def cancel_booking(request, booking_id):
     else:
         messages.error(request, "Unable to cancel this booking.")
 
-    return redirect("my_bookings")
+    return redirect("booking:my_bookings")
 
