@@ -1,6 +1,8 @@
 from decimal import Decimal
 import json
 import requests
+import uuid
+
 
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -171,8 +173,7 @@ def create_cashfree_order(request):
             price_at_purchase=product.price,
         )
 
-    cashfree_order_id = f"store_{order.id}"
-
+    cashfree_order_id = f"store_{order.id}_{uuid.uuid4().hex[:8]}"
     payload = {
         "order_id": cashfree_order_id,
         "order_amount": float(order.total_amount),
