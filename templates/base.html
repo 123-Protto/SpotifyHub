@@ -72,37 +72,52 @@
             </ul>
 
             <!-- RIGHT -->
-            <ul class="navbar-nav gap-2 align-items-center">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if '/store/my_orders/' in request.path %}active{% endif %}"
-                           href="{% url 'store:my_orders' %}">
-                            My Orders
-                        </a>
-                    </li>
+<ul class="navbar-nav gap-2 align-items-center">
+    {% if user.is_authenticated %}
 
-                    <li class="nav-item">
-                        <a class="btn btn-outline-danger btn-sm"
-                           href="{% url 'account_logout' %}">
-                            Logout
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="btn btn-outline-light btn-sm"
-                           href="{% url 'account_login' %}">
-                            Login
-                        </a>
-                    </li>
+        <!-- My Orders -->
+        <li class="nav-item">
+            <a class="nav-link {% if '/store/my_orders/' in request.path %}active{% endif %}"
+               href="{% url 'store:my_orders' %}">
+                My Orders
+            </a>
+        </li>
 
-                    <li class="nav-item">
-                        <a class="btn btn-primary btn-sm"
-                           href="{% url 'account_signup' %}">
-                            Register
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
+        <!-- My Bookings -->
+        <li class="nav-item">
+            <a class="nav-link {% if '/booking/my-bookings/' in request.path %}active{% endif %}"
+               href="{% url 'booking:my_bookings' %}">
+                My Bookings
+            </a>
+        </li>
+
+        <!-- Logout -->
+        <li class="nav-item">
+            <a class="btn btn-outline-danger btn-sm"
+               href="{% url 'account_logout' %}">
+                Logout
+            </a>
+        </li>
+
+    {% else %}
+
+        <li class="nav-item">
+            <a class="btn btn-outline-light btn-sm"
+               href="{% url 'account_login' %}">
+                Login
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="btn btn-primary btn-sm"
+               href="{% url 'account_signup' %}">
+                Register
+            </a>
+        </li>
+
+    {% endif %}
+</ul>
+
 
         </div>
     </div>

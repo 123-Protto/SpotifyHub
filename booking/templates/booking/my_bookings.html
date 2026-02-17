@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <h2 class="mb-4 text-white">My Event Bookings</h2>
+
+    {% if bookings %}
+        <div class="row g-4">
+            {% for booking in bookings %}
+                <div class="col-md-6">
+                    <div class="card shadow-lg border-0">
+
+                        <div class="card-body">
+
+                            <h5 class="card-title">
+                                {{ booking.event.name }}
+                            </h5>
+
+                            <p class="mb-1">
+                                Tickets: {{ booking.num_tickets }}
+                            </p>
+
+                            <p class="mb-1">
+                                Total: ₹{{ booking.total_price }}
+                            </p>
+
+                            <p class="mb-2">
+                                Status:
+                                {% if booking.is_cancelled %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% elif booking.is_paid %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </p>
+
+                            {% if not booking.is_cancelled and not booking.is_paid %}
+                                <form method="POST"
+                                      action="{% url 'booking:cancel_booking' booking.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger btn-sm">
+                                        Cancel Booking
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-white">You have no bookings yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

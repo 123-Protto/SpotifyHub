@@ -413,6 +413,15 @@ def payment_failed_view(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     return render(request, "booking/payment_failed.html", {"booking": booking})
 
+@login_required
+def my_bookings(request):
+    bookings = Booking.objects.filter(
+        user=request.user
+    ).order_by("-booking_date")
+
+    return render(request, "booking/my_bookings.html", {
+        "bookings": bookings
+    })
 
 @login_required
 def cancel_booking(request, booking_id):
@@ -441,3 +450,4 @@ def cancel_booking(request, booking_id):
         messages.error(request, "Unable to cancel this booking.")
 
     return redirect("my_bookings")
+

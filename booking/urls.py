@@ -10,6 +10,7 @@ from .views import (
     download_ticket,
     cashfree_webhook,   # ✅ IMPORT THE WEBHOOK VIEW
 )
+from . import views
 
 app_name = "booking"
 
@@ -35,4 +36,11 @@ urlpatterns = [
         cashfree_webhook,
         name="cashfree_webhook"
     ),
+    path(
+        "cancel/<int:booking_id>/",
+        views.cancel_booking,
+        name="cancel_booking"
+    ),
+    path("my-bookings/", views.my_bookings, name="my_bookings"),
+
 ]

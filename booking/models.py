@@ -3,6 +3,8 @@ from django.db import models
 from django.conf import settings
 from events.models import Event, Seat
 from django.core.validators import RegexValidator
+from django.utils import timezone
+
 
 
 User = settings.AUTH_USER_MODEL
@@ -125,6 +127,10 @@ class Booking(models.Model):
     )
 
     is_paid = models.BooleanField(default=False)
+    # ================= CANCELLATION =================
+    is_cancelled = models.BooleanField(default=False)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+
 
     class Meta:
         ordering = ["-booking_date"]
@@ -146,6 +152,40 @@ class Booking(models.Model):
             "payment_status",
             "is_paid"
         ])
+
+    def cancel(self):
+        if self.is_cancelled:
+             return False
+
+        # Optional: Prevent cancelling after payment
+        # Remove this block if you want refund logic
+        if self.is_paid:
+            return False
+
+        # Release seats (if any)
+        self.seats.clear()
+
+        # Invalidate related tickets
+        Ticket.objects.filter(
+            user=self.user,
+            event=self.event,
+            booking_ref=str(self.id)
+        ).update(is_used=True)
+
+        # Update booking status
+        self.is_cancelled = True
+        self.cancelled_at = timezone.now()
+        self.payment_status = self.PAYMENT_FAILED
+
+        self.save(update_fields=[
+            "is_cancelled",
+            "cancelled_at",
+            "payment_status"
+        ])
+
+        return True
+
+    
 class Ticket(models.Model):
     ticket_id = models.UUIDField(
         default=uuid.uuid4,
