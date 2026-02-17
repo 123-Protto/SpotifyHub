@@ -439,7 +439,7 @@ def cancel_booking(request, booking_id):
     # Prevent cancel if event already started
     if booking.event.date < timezone.now():
         messages.error(request, "You cannot cancel past events.")
-        return redirect("my_bookings")
+        return redirect("booking:my_bookings")
 
     # Attempt cancel
     cancelled = booking.cancel()
