@@ -26,6 +26,7 @@ from events.models import Event, Seat
 from .models import Booking, ShippingAddress, BookingContact, Ticket
 from .forms import ShippingAddressForm, BookingContactForm
 from .utils import generate_ticket_qr
+from django.utils import timezone
 
 
 
@@ -411,3 +412,32 @@ def payment_success_view(request, booking_id):
 def payment_failed_view(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     return render(request, "booking/payment_failed.html", {"booking": booking})
+
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        user=request.user
+    )
+
+    # Already cancelled
+    if booking.is_cancelled:
+        messages.warning(request, "This booking is already cancelled.")
+        return redirect("my_bookings")
+
+    # Prevent cancel if event already started
+    if booking.event.date < timezone.now():
+        messages.error(request, "You cannot cancel past events.")
+        return redirect("my_bookings")
+
+    # Attempt cancel
+    cancelled = booking.cancel()
+
+    if cancelled:
+        messages.success(request, "Booking cancelled successfully.")
+    else:
+        messages.error(request, "Unable to cancel this booking.")
+
+    return redirect("my_bookings")
