@@ -130,6 +130,9 @@ class Booking(models.Model):
     # ================= CANCELLATION =================
     is_cancelled = models.BooleanField(default=False)
     cancelled_at = models.DateTimeField(null=True, blank=True)
+    # ================= REFUND =================
+    refund_id = models.CharField(max_length=100, blank=True, null=True)
+    refund_status = models.CharField(max_length=50, blank=True, null=True)
 
 
     class Meta:

@@ -458,6 +458,7 @@ def my_bookings(request):
     })
 
 @login_required
+@transaction.atomic
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(
         Booking,
@@ -468,20 +469,75 @@ def cancel_booking(request, booking_id):
     # Already cancelled
     if booking.is_cancelled:
         messages.warning(request, "This booking is already cancelled.")
-        return redirect("my_bookings")
+        return redirect("booking:my_bookings")
 
     # Prevent cancel if event already started
     if booking.event.date < timezone.now():
         messages.error(request, "You cannot cancel past events.")
         return redirect("booking:my_bookings")
 
-    # Attempt cancel
-    cancelled = booking.cancel()
+    # Only allow refund if payment was successful
+    if not booking.is_paid:
+        messages.error(request, "Payment not completed. Cannot refund.")
+        return redirect("booking:my_bookings")
 
-    if cancelled:
-        messages.success(request, "Booking cancelled successfully.")
-    else:
-        messages.error(request, "Unable to cancel this booking.")
+    # =============================
+    # 🔁 CALL CASHFREE REFUND API
+    # =============================
+    refund_payload = {
+        "refund_amount": float(booking.total_price),
+        "refund_id": f"refund_{uuid.uuid4().hex[:10]}",
+        "refund_note": "User cancelled booking"
+    }
+
+    headers = {
+        "x-client-id": settings.CASHFREE_CLIENT_ID,
+        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+        "x-api-version": "2022-09-01",
+        "Content-Type": "application/json",
+    }
+
+    refund_url = f"{settings.CASHFREE_BASE_URL}/orders/{booking.cashfree_order_id}/refunds"
+
+    response = requests.post(
+        refund_url,
+        json=refund_payload,
+        headers=headers,
+        timeout=10,
+    )
+
+    if response.status_code not in [200, 201]:
+        messages.error(request, "Refund initiation failed. Try again later.")
+        return redirect("booking:my_bookings")
+
+    refund_data = response.json()
+
+    # =============================
+    # ✅ Update Booking
+    # =============================
+    booking.refund_id = refund_data.get("refund_id")
+    booking.refund_status = refund_data.get("refund_status")
+    booking.is_cancelled = True
+    booking.cancelled_at = timezone.now()
+    booking.payment_status = Booking.PAYMENT_FAILED
+
+    booking.save(update_fields=[
+        "refund_id",
+        "refund_status",
+        "is_cancelled",
+        "cancelled_at",
+        "payment_status"
+    ])
+
+    # Release seats
+    for seat in booking.seats.all():
+        seat.is_sold = False
+        seat.save(update_fields=["is_sold"])
+
+    booking.seats.clear()
+
+    messages.success(request, "Booking cancelled and refund initiated successfully.")
 
     return redirect("booking:my_bookings")
+
 
