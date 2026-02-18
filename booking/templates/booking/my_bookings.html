@@ -2,6 +2,23 @@
 {% block title %}My Bookings{% endblock %}
 
 {% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show shadow"
+             role="alert"
+             style="border-radius:12px;">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{ message }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    {% endfor %}
+{% endif %}
+
 <div class="container mt-5 pt-4">
     <h2 class="mb-4 text-white">My Event Bookings</h2>
 

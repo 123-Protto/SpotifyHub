@@ -416,7 +416,8 @@ def payment_failed_view(request, booking_id):
 @login_required
 def my_bookings(request):
     bookings = Booking.objects.filter(
-        user=request.user
+        user=request.user,
+        is_cancelled=False
     ).order_by("-booking_date")
 
     return render(request, "booking/my_bookings.html", {

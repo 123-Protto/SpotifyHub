@@ -3,13 +3,42 @@
 
 {% block content %}
     <h1>My Orders</h1>
+
     {% if orders %}
         {% for order in orders %}
             <div class="order-item">
                 <h3>Order #{{ order.id }}</h3>
+
                 <p>Total: ₹{{ order.total_amount }}</p>
-                <p>Status: {{ order.payment_status }}</p>
+
+                <p>
+                    Order Status:
+                    {% if order.order_status == "CANCELLED" %}
+                        <span class="badge bg-danger">Cancelled</span>
+                    {% elif order.order_status == "DELIVERED" %}
+                        <span class="badge bg-success">Delivered</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">
+                            {{ order.order_status }}
+                        </span>
+                    {% endif %}
+                </p>
+
+                <p>Payment Status: {{ order.payment_status }}</p>
                 <p>Date: {{ order.created_at }}</p>
+
+                <!-- Cancel Button -->
+                {% if order.order_status != "CANCELLED" and order.order_status != "DELIVERED" %}
+                    <form method="POST"
+                          action="{% url 'store:cancel_order' order.id %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-danger btn-sm">
+                            Cancel Order
+                        </button>
+                    </form>
+                {% endif %}
+
             </div>
             <hr>
         {% endfor %}
