@@ -356,3 +356,28 @@ def invoice_view(request, order_id):
         payment_status="COMPLETED"
     )
     return render(request, "store/invoice.html", {"order": order})
+
+@login_required
+@require_POST
+def cancel_order(request, order_id):
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
+
+    # Already cancelled
+    if order.order_status == "CANCELLED":
+        messages.warning(request, "Order already cancelled.")
+        return redirect("store:my_orders")
+
+    # Delivered orders cannot be cancelled
+    if order.order_status == "DELIVERED":
+        messages.error(request, "Delivered orders cannot be cancelled.")
+        return redirect("store:my_orders")
+
+    order.order_status = "CANCELLED"
+    order.save(update_fields=["order_status"])
+
+    messages.success(request, "Order cancelled successfully.")
+    return redirect("store:my_orders")
