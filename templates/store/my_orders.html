@@ -1,4 +1,4 @@
-{% comment %} {% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block title %}My Orders{% endblock %}
@@ -47,6 +47,26 @@
                             View Details
                         </a>
                     </div>
+                    <div class="order-footer mt-3 d-flex gap-2">
+
+    <a href="{% url 'store:order_confirmation' order.id %}"
+       class="btn btn-outline-light btn-sm">
+        View Details
+    </a>
+
+    {% if order.order_status != "CANCELLED" and order.order_status != "DELIVERED" %}
+        <form method="POST"
+              action="{% url 'store:cancel_order' order.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-danger btn-sm">
+                Cancel Order
+            </button>
+        </form>
+    {% endif %}
+
+</div>
+
 
                 </div>
             {% endfor %}
@@ -58,4 +78,4 @@
     {% endif %}
 
 </div>
-{% endblock %} {% endcomment %}
+{% endblock %}
