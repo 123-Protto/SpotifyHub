@@ -156,6 +156,9 @@ class Booking(models.Model):
     def cancel(self):
         if self.is_cancelled:
              return False
+        for seat in self.seats.all():
+            seat.is_sold = False
+            seat.save(update_fields=["is_sold"])
 
         # Optional: Prevent cancelling after payment
         # Remove this block if you want refund logic

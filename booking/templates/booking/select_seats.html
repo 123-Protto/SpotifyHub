@@ -222,11 +222,11 @@
                                     Key change: input type is now "checkbox"
                                     The "selected" class is added based on if the seat is already associated with the booking.
                                 {% endcomment %}
-                                <label class="seat-button {% if seat.is_booked %}sold{% elif seat in booking.seats.all %}selected{% else %}available{% endif %}">
+                                <label class="seat-button {% if seat.is_sold %}sold{% elif seat in booking.seats.all %}selected{% else %}available{% endif %}">
                                     <input type="checkbox" 
                                            name="selected_seats" 
                                            value="{{ seat.id }}" 
-                                           {% if seat.is_booked %}disabled{% endif %}
+                                           {% if seat.is_sold %}disabled{% endif %}
                                            {% if seat in booking.seats.all %}checked{% endif %}>
                                     <span class="seat-content">{{ seat.seat_number }}</span>
                                 </label>
