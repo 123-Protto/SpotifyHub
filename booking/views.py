@@ -59,14 +59,17 @@ def book_event_view(request, event_id):
 # =====================================================
 # 2) SELECT SEATS
 # =====================================================
-from django.db import transaction
-
 @login_required
 @transaction.atomic
 def select_seats_view(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    booking = get_object_or_404(
+        Booking,
+        id=booking_id,
+        user=request.user
+    )
     event = booking.event
 
+    # ================= POST =================
     if request.method == "POST":
         seat_ids = request.POST.getlist("selected_seats")
 
@@ -74,28 +77,57 @@ def select_seats_view(request, booking_id):
             messages.error(request, "Select at least one seat")
             return redirect("booking:select_seats", booking_id=booking.id)
 
-        # 🔒 Lock selected seats (prevents race condition)
+        # 🔒 Lock seats to prevent race condition
         seats = Seat.objects.select_for_update().filter(
             id__in=seat_ids,
             event=event
         )
 
-        # 🚨 Check if any seat already sold
+        # 🚨 Check if already sold
         for seat in seats:
             if seat.is_sold:
                 messages.error(request, "One or more seats already booked!")
                 return redirect("booking:select_seats", booking_id=booking.id)
 
-        # ✅ Clear old seats
+        # 🧹 Clear old seats
         booking.seats.clear()
 
-        # ✅ Mark seats as sold
+        # ✅ Mark as sold + attach to booking
         for seat in seats:
             seat.is_sold = True
             seat.save(update_fields=["is_sold"])
             booking.seats.add(seat)
 
-        return redirect("booking:add_booking_contact", booking_id=booking.id)
+        return redirect(
+            "booking:add_booking_contact",
+            booking_id=booking.id
+        )
+
+    # ================= GET =================
+    seats = Seat.objects.filter(
+        event=event
+    ).order_by("section", "row_number")
+
+    from itertools import groupby
+    from operator import attrgetter
+
+    grouped = []
+    for section, sec_group in groupby(seats, key=attrgetter("section")):
+        rows = []
+        for row, row_group in groupby(sec_group, key=attrgetter("row_number")):
+            rows.append((row, list(row_group)))
+        grouped.append((section, rows))
+
+    return render(
+        request,
+        "booking/select_seats.html",
+        {
+            "booking": booking,
+            "event": event,
+            "seats_by_section_and_row": grouped,
+        },
+    )
+
 
 
 # =====================================================
