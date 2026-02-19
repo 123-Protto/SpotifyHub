@@ -49,4 +49,6 @@ urlpatterns = [
     name="invoice"
 ),
     path("cancel/<int:order_id>/", views.cancel_order, name="cancel_order"),
+    path("product/<int:product_id>/", views.product_detail, name="product_detail"),
+
 ]

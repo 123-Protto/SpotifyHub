@@ -16,7 +16,7 @@ from django.utils import timezone
 
 from .models import (
     Cart, CartItem, Product, Address,
-    Order, OrderItem, OrderShipping
+    Order, OrderItem, OrderShipping, ProductReview
 )
 from .forms import AddressForm
 
@@ -381,3 +381,29 @@ def cancel_order(request, order_id):
 
     messages.success(request, "Order cancelled successfully.")
     return redirect("store:my_orders")
+
+@login_required
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    reviews = product.reviews.all().order_by("-created_at")
+
+    if request.method == "POST":
+        rating = int(request.POST.get("rating"))
+        comment = request.POST.get("comment")
+
+        ProductReview.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={
+                "rating": rating,
+                "comment": comment,
+            }
+        )
+
+        messages.success(request, "Review submitted!")
+        return redirect("store:product_detail", product_id=product.id)
+
+    return render(request, "store/product_detail.html", {
+        "product": product,
+        "reviews": reviews,
+    })

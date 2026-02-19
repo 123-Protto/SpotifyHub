@@ -23,7 +23,12 @@
             </div>
 
             <!-- INFO -->
-            <h2 class="mt-3">{{ product.name }}</h2>
+            <h2 class="mt-3">
+    <a href="{% url 'store:product_detail' product.id %}" class="text-white text-decoration-none">
+        {{ product.name }}
+    </a>
+</h2>
+
             <p class="price">₹{{ product.price }}</p>
 
             <div class="mt-3 d-flex justify-content-center gap-2">
